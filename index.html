@@ -275,6 +275,28 @@ nav button.active svg{transform:scale(1.1)}
 .shop-item .qty{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text2);
   background:var(--bg);padding:2px 8px;border-radius:4px}
 
+/* ===== GLOSSARY LIST ===== */
+.glossary-search{position:sticky;top:0;z-index:10;padding:8px 0;background:var(--bg)}
+.glossary-list{display:flex;flex-direction:column;gap:8px}
+.glossary-entry{background:var(--card);border-radius:var(--radius-sm);padding:12px 14px;
+  border:1px solid var(--border);cursor:pointer;transition:all .2s var(--ease)}
+.glossary-entry:active{transform:scale(.98)}
+.glossary-entry-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.glossary-entry-cat{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;
+  border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
+.glossary-entry-cat.ejercicio{background:var(--primary-soft);color:var(--primary)}
+.glossary-entry-cat.metodo{background:var(--accent-soft);color:var(--accent)}
+.glossary-entry-cat.variable{background:var(--warning-soft);color:var(--warning)}
+.glossary-entry-cat.tecnica{background:var(--success-soft);color:var(--success)}
+.glossary-entry-cat.concepto{background:var(--danger-soft);color:var(--danger)}
+.glossary-entry-cat.abreviatura{background:rgba(100,116,139,.15);color:var(--text2)}
+.glossary-entry-desc{font-size:13px;color:var(--text2);line-height:1.5;margin-top:6px;
+  display:none}
+.glossary-entry.expanded .glossary-entry-desc{display:block}
+.glossary-filter-pills{display:flex;gap:6px;overflow-x:auto;padding:6px 0;scrollbar-width:none}
+.glossary-filter-pills::-webkit-scrollbar{display:none}
+.glossary-count{font-size:11px;color:var(--text3);margin-bottom:8px}
+
 /* ===== COLLAPSIBLE ===== */
 .collapse-btn{width:100%;display:flex;align-items:center;justify-content:space-between;
   padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
@@ -458,6 +480,19 @@ nav button.active svg{transform:scale(1.1)}
 
   <!-- History -->
   <div id="ent-history" style="margin-top:16px"></div>
+
+  <!-- Glossary Section -->
+  <div style="margin-top:8px">
+    <button class="collapse-btn" id="glossary-toggle">📖 Glosario de terminos</button>
+    <div class="collapse-body" id="glossary-section">
+      <div class="glossary-search">
+        <input class="input" type="search" id="glossary-search-input" placeholder="Buscar termino..." style="margin-bottom:6px">
+        <div class="glossary-filter-pills" id="glossary-filters"></div>
+      </div>
+      <div class="glossary-count" id="glossary-count"></div>
+      <div class="glossary-list" id="glossary-list"></div>
+    </div>
+  </div>
 </div>
 
 <!-- VIEW: COMIDA -->
@@ -899,6 +934,7 @@ function renderEntreno(){
   renderExercises();
   renderEntProgress();
   renderHistory();
+  initGlossary();
 }
 
 function renderEntWeeks(){
@@ -1082,16 +1118,34 @@ function renderExercises(){
 /* ===== GLOSSARY ===== */
 function showGlossary(name){
   if (!GLOSSARY) return;
-  const entry = GLOSSARY.find(g => g.name && name.toLowerCase().includes(g.name.toLowerCase().split(' ')[0]));
   const modal = document.getElementById('glossary-modal');
   document.getElementById('glossary-title').textContent = name;
+
+  // Search in GLOSSARY object (keys are term names)
+  const nameLow = name.toLowerCase();
+  let entry = null;
+
+  // Exact match first
+  for (const [key, val] of Object.entries(GLOSSARY)) {
+    if (key.toLowerCase() === nameLow) { entry = val; break; }
+  }
+  // Partial match: exercise name contains glossary key or vice versa
+  if (!entry) {
+    for (const [key, val] of Object.entries(GLOSSARY)) {
+      const keyLow = key.toLowerCase();
+      if (nameLow.includes(keyLow.split(' ')[0]) || keyLow.includes(nameLow.split(' ')[0])) {
+        entry = val; break;
+      }
+    }
+  }
+
   if (entry) {
     let body = '';
-    if (entry.category) body += `<p><strong>Categoria:</strong> ${entry.category}</p>`;
-    if (entry.muscles) body += `<p><strong>Musculos:</strong> ${entry.muscles}</p>`;
-    if (entry.description) body += `<p>${entry.description}</p>`;
-    if (entry.herniaNote) body += `<p style="color:var(--warning)"><strong>Nota hernia:</strong> ${entry.herniaNote}</p>`;
-    document.getElementById('glossary-body').innerHTML = body || '<p>Sin informacion adicional.</p>';
+    if (entry.category) body += `<p><span class="glossary-entry-cat ${(entry.category||'').toLowerCase()}" style="margin-bottom:8px">${entry.category}</span></p>`;
+    if (entry.description) body += `<p style="margin-top:8px">${entry.description}</p>`;
+    if (entry.muscles) body += `<p style="margin-top:8px"><strong>Musculos:</strong> ${entry.muscles}</p>`;
+    if (entry.herniaNote) body += `<p style="margin-top:8px;color:var(--warning)"><strong>Nota hernia:</strong> ${entry.herniaNote}</p>`;
+    document.getElementById('glossary-body').innerHTML = body;
   } else {
     document.getElementById('glossary-body').innerHTML = '<p>Sin informacion en el glosario para este ejercicio.</p>';
   }
@@ -1124,6 +1178,82 @@ function renderHistory(){
   });
   html += '</div>';
   container.innerHTML = html;
+}
+
+/* ===== GLOSSARY BROWSER ===== */
+let glossaryFilter = 'all';
+let glossarySearchTerm = '';
+
+function initGlossary(){
+  const toggle = document.getElementById('glossary-toggle');
+  const section = document.getElementById('glossary-section');
+  toggle.addEventListener('click', () => {
+    toggle.classList.toggle('open');
+    section.classList.toggle('open');
+    if (section.classList.contains('open')) renderGlossaryList();
+  });
+
+  document.getElementById('glossary-search-input').addEventListener('input', (e) => {
+    glossarySearchTerm = e.target.value.toLowerCase();
+    renderGlossaryList();
+  });
+}
+
+function renderGlossaryList(){
+  if (!GLOSSARY || typeof GLOSSARY !== 'object') return;
+
+  const entries = Object.entries(GLOSSARY);
+
+  // Get unique categories
+  const cats = [...new Set(entries.map(([,v]) => (v.category||'Otro').toLowerCase()))];
+
+  // Render filter pills
+  let filterHtml = `<button class="pill ${glossaryFilter==='all'?'active':''}" data-gf="all">Todos</button>`;
+  const catLabels = {ejercicio:'Ejercicio',metodo:'Metodo',variable:'Variable',tecnica:'Tecnica',concepto:'Concepto',abreviatura:'Abreviatura'};
+  cats.forEach(c => {
+    const label = catLabels[c] || c.charAt(0).toUpperCase()+c.slice(1);
+    filterHtml += `<button class="pill ${glossaryFilter===c?'active':''}" data-gf="${c}">${label}</button>`;
+  });
+  document.getElementById('glossary-filters').innerHTML = filterHtml;
+  document.getElementById('glossary-filters').querySelectorAll('.pill').forEach(p => {
+    p.addEventListener('click', () => {
+      glossaryFilter = p.dataset.gf;
+      renderGlossaryList();
+    });
+  });
+
+  // Filter entries
+  let filtered = entries;
+  if (glossaryFilter !== 'all') {
+    filtered = filtered.filter(([,v]) => (v.category||'').toLowerCase() === glossaryFilter);
+  }
+  if (glossarySearchTerm) {
+    filtered = filtered.filter(([name, v]) =>
+      name.toLowerCase().includes(glossarySearchTerm) ||
+      (v.description||'').toLowerCase().includes(glossarySearchTerm)
+    );
+  }
+
+  document.getElementById('glossary-count').textContent = `${filtered.length} terminos`;
+
+  let html = '';
+  filtered.forEach(([name, data]) => {
+    const catClass = (data.category||'otro').toLowerCase();
+    const catLabel = data.category || 'Otro';
+    html += `<div class="glossary-entry" data-gname="${name}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="glossary-entry-name">${name}</div>
+        <span class="glossary-entry-cat ${catClass}">${catLabel}</span>
+      </div>
+      <div class="glossary-entry-desc">${data.description || ''}</div>
+    </div>`;
+  });
+  document.getElementById('glossary-list').innerHTML = html || '<div class="caption" style="text-align:center;padding:16px">No se encontraron terminos</div>';
+
+  // Toggle expand on click
+  document.querySelectorAll('.glossary-entry').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('expanded'));
+  });
 }
 
 /* ===== COMIDA VIEW ===== */
