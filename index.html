@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1F4E79">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Plan Rafa</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#f5f5f5;--card:#ffffff;--text:#1a1a1a;--text2:#555;--primary:#1F4E79;--accent:#3498db;
+--border:#e0e0e0;--alta:#e74c3c;--media:#f39c12;--baja:#27ae60;
+--nav-h:56px;--safe-b:env(safe-area-inset-bottom,0px);
+}
+[data-theme="dark"]{
+--bg:#1a1a1a;--card:#2a2a2a;--text:#e0e0e0;--text2:#aaa;--primary:#4a9eff;--accent:#5bb8ff;
+--border:#444;
+}
+html{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;color:var(--text);background:var(--bg)}
+body{min-height:100dvh;padding-bottom:calc(var(--nav-h) + var(--safe-b) + 8px)}
+.view{display:none;padding:12px 12px 0}
+.view.active{display:block}
+.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.card-title{font-size:16px;font-weight:700;margin-bottom:8px}
+.card-subtitle{font-size:12px;color:var(--text2);margin-bottom:8px}
+h1.view-title{font-size:20px;font-weight:700;margin-bottom:12px;padding-top:8px}
+
+/* NAV */
+nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-h) + var(--safe-b));
+background:var(--card);border-top:1px solid var(--border);display:flex;padding-bottom:var(--safe-b);z-index:100;
+box-shadow:0 -2px 8px rgba(0,0,0,.06)}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+border:none;background:none;color:var(--text2);font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+nav button.active{color:var(--primary)}
+nav button svg{width:22px;height:22px}
+
+/* PILLS */
+.pills{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.pill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--text);
+font-size:13px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pill.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:10px;padding:8px 12px;border-radius:10px;background:var(--card);
+box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.tl-item::before{content:'';position:absolute;left:-18px;top:14px;width:10px;height:10px;border-radius:50%;
+background:var(--border);border:2px solid var(--card)}
+.tl-item.past{opacity:.55}
+.tl-item.now{border-left:3px solid var(--accent)}
+.tl-item.now::before{background:var(--accent);box-shadow:0 0 0 3px rgba(52,152,219,.3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(52,152,219,.3)}50%{box-shadow:0 0 0 6px rgba(52,152,219,.1)}}
+.tl-time{font-size:12px;font-weight:700;color:var(--primary)}
+.tl-act{font-size:14px;font-weight:600;margin:2px 0}
+.tl-supps{font-size:12px;color:var(--accent);margin-top:2px}
+.tl-notes{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* EXERCISE CARDS */
+.ex-card{background:var(--card);border-radius:10px;padding:12px;margin-bottom:8px;border-left:3px solid var(--primary);
+box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.ex-card.hernia-warn{border-left-color:var(--alta)}
+.ex-name{font-size:14px;font-weight:700;color:var(--primary);cursor:pointer;text-decoration:underline dotted;
+text-underline-offset:3px}
+.ex-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;font-size:12px;text-align:center}
+.ex-input{width:100%;text-align:center;font-size:13px;border:none;border-bottom:1.5px solid var(--primary);
+background:transparent;color:var(--text);padding:2px 0;outline:none;-moz-appearance:textfield}
+.ex-input::-webkit-inner-spin-button,.ex-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.ex-input:focus{border-bottom-color:var(--baja)}
+.ex-input::placeholder{color:var(--text2);opacity:.6}
+.timer-bar{display:flex;align-items:center;gap:8px;padding:12px;background:var(--card);border-radius:12px;
+margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.timer-btn{border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;
+display:flex;align-items:center;gap:4px;-webkit-tap-highlight-color:transparent}
+.timer-btn.start{background:var(--baja);color:#fff}
+.timer-btn.pause{background:#f59e0b;color:#fff}
+.timer-btn.stop{background:var(--alta);color:#fff}
+.timer-btn.resume{background:var(--baja);color:#fff}
+.timer-display{font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:var(--text);margin-left:auto}
+.timer-done{font-size:13px;color:var(--baja);font-weight:600}
+.export-section{margin-top:16px;padding:12px;background:var(--card);border-radius:12px}
+.export-section h4{margin:0 0 8px;font-size:14px}
+.export-btn{border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-bottom:8px}
+.export-btn.primary{background:var(--primary);color:#fff}
+.export-btn.secondary{background:var(--border);color:var(--text)}
+.ex-grid-head{font-weight:700;color:var(--text2);font-size:11px}
+.ex-notes{font-size:12px;color:var(--text2);margin-top:6px;font-style:italic}
+.ex-warn{font-size:11px;color:var(--alta);margin-top:4px;font-weight:600}
+.ex-done{display:flex;align-items:center;gap:6px;margin-top:8px}
+
+/* CHECKBOX */
+.chk{width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.chk input{display:none}
+.chk span{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:.15s}
+.chk input:checked+span{background:var(--baja);border-color:var(--baja)}
+.chk input:checked+span::after{content:'';width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-2px}
+
+/* MACROS BAR */
+.macros{display:flex;gap:8px;margin-bottom:12px}
+.macro-pill{flex:1;text-align:center;padding:8px;border-radius:10px;background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.macro-pill .val{font-size:16px;font-weight:700;color:var(--primary)}
+.macro-pill .lbl{font-size:11px;color:var(--text2)}
+
+/* COLLAPSIBLE */
+.collapse-btn{width:100%;text-align:left;padding:10px 0;font-size:14px;font-weight:700;border:none;background:none;
+color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;-webkit-tap-highlight-color:transparent}
+.collapse-btn::after{content:'';width:8px;height:8px;border-right:2px solid var(--text2);border-bottom:2px solid var(--text2);
+transform:rotate(45deg);transition:.2s}
+.collapse-btn.open::after{transform:rotate(-135deg)}
+.collapse-body{display:none;padding-bottom:8px}
+.collapse-body.open{display:block}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.tbl th{text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);color:var(--text2);font-size:12px}
+.tbl td{padding:6px 8px;border-bottom:1px solid var(--border)}
+
+/* SHOPPING */
+.shop-cat{font-size:14px;font-weight:700;color:var(--primary);margin:12px 0 6px;text-transform:uppercase}
+.shop-item{display:flex;align-items:center;gap:4px;padding:4px 0}
+.shop-item .qty{font-size:12px;color:var(--text2);margin-left:auto;white-space:nowrap}
+
+/* CONFIG */
+.cfg-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.cfg-row:last-child{border-bottom:none}
+.cfg-label{font-size:14px}
+.num-ctrl{display:flex;align-items:center;gap:8px}
+.num-ctrl button{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);
+font-size:18px;font-weight:700;color:var(--primary);cursor:pointer}
+.num-ctrl span{font-size:16px;font-weight:700;min-width:24px;text-align:center}
+select{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:13px}
+.toggle{position:relative;width:50px;height:28px;cursor:pointer}
+.toggle input{display:none}
+.toggle .slider{position:absolute;inset:0;background:var(--border);border-radius:14px;transition:.2s}
+.toggle .slider::before{content:'';position:absolute;height:22px;width:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.slider{background:var(--primary)}
+.toggle input:checked+.slider::before{transform:translateX(22px)}
+.btn-danger{padding:10px 20px;border-radius:10px;border:none;background:var(--alta);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px}
+.hernia-section{margin-top:8px}
+.hernia-section h4{font-size:13px;color:var(--alta);margin:10px 0 4px}
+.hernia-section li{font-size:13px;margin:4px 0 4px 16px;list-style:disc}
+.hernia-section .detail{color:var(--text2);font-size:12px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-sheet{background:var(--card);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:500px;
+max-height:60dvh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.modal-cat{font-size:12px;color:var(--accent);margin-bottom:8px}
+.modal-desc{font-size:14px;line-height:1.5;color:var(--text2)}
+
+/* FOOD ITEM */
+.food-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.food-item:last-child{border-bottom:none}
+.food-item .name{flex:1}
+.food-item .macro{font-size:11px;color:var(--text2);white-space:nowrap}
+
+/* PREP STEP */
+.prep-step{padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.prep-step:last-child{border-bottom:none}
+
+/* TUPPER CARD */
+.tupper-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px}
+.tupper-label{font-weight:700;color:var(--primary)}
+
+@media(min-width:768px){
+  .view{max-width:600px;margin:0 auto}
+  nav{max-width:600px;left:50%;transform:translateX(-50%);border-radius:16px 16px 0 0}
+}
+</style>
+</head>
+<body>
+
+<div id="v-hoy" class="view active">
+  <h1 class="view-title">Hoy</h1>
+  <div id="hoy-header" class="card"></div>
+  <div class="card"><div class="card-title">Horario</div><div id="hoy-timeline" class="timeline"></div></div>
+  <div id="hoy-tupper" class="card"></div>
+  <div id="hoy-supps" class="card"></div>
+  <div id="hoy-training" class="card" style="display:none"></div>
+</div>
+
+<div id="v-entreno" class="view">
+  <h1 class="view-title">Entreno</h1>
+  <div id="ent-timer"></div>
+  <div id="ent-blocks" class="pills"></div>
+  <div id="ent-weeks" class="pills"></div>
+  <div id="ent-days" class="pills"></div>
+  <div id="ent-exercises"></div>
+</div>
+
+<div id="v-comida" class="view">
+  <h1 class="view-title">Comida</h1>
+  <div id="com-tabs" class="pills">
+    <button class="pill active" data-ctab="hoy">Hoy</button>
+    <button class="pill" data-ctab="prep">Prep</button>
+    <button class="pill" data-ctab="compra">Compra</button>
+  </div>
+  <div id="com-hoy"></div>
+  <div id="com-prep" style="display:none"></div>
+  <div id="com-compra" style="display:none"></div>
+</div>
+
+<div id="v-config" class="view">
+  <h1 class="view-title">Configuracion</h1>
+  <div id="cfg-content" class="card"></div>
+</div>
+
+<div id="glossary-modal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="modal-title" class="modal-title"></div>
+    <div id="modal-cat" class="modal-cat"></div>
+    <div id="modal-desc" class="modal-desc"></div>
+  </div>
+</div>
+
+<nav>
+  <button class="active" data-tab="hoy">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Hoy
+  </button>
+  <button data-tab="entreno">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5a2 2 0 013 0l0 0a2 2 0 010 3l0 0"/><line x1="2" y1="12" x2="22" y2="12"/><rect x="4" y="10" width="3" height="4" rx="1"/><rect x="17" y="10" width="3" height="4" rx="1"/><rect x="7" y="11" width="2" height="2"/><rect x="15" y="11" width="2" height="2"/></svg>
+    Entreno
+  </button>
+  <button data-tab="comida">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><line x1="7" y1="2" x2="7" y2="22"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+    Comida
+  </button>
+  <button data-tab="config">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Config
+  </button>
+</nav>
+
+<script src="training_data.js"></script>
+<script>
+(function(){
+
+const SCHEDULE = {
+  weekday: [
+    {time:"05:50",activity:"Despertar",supplements:"",notes:"Sin desayuno. Aseo rapido."},
+    {time:"06:00-06:30",activity:"Exposicion luz solar",supplements:"",notes:"5-10 min de luz natural al salir. Regula ritmo circadiano."},
+    {time:"06:30",activity:"Salida al trabajo",supplements:"",notes:"Conducir ~30 min."},
+    {time:"07:00",activity:"Llegada al trabajo",supplements:"",notes:""},
+    {time:"07:30",activity:"Desayuno en trabajo",supplements:"Omega 3 + Melena de leon (cafe)",notes:"2 tostadas integrales + mantequilla + pavo/serrano + aguacate. 1er cafe."},
+    {time:"10:00",activity:"2do cafe",supplements:"",notes:""},
+    {time:"11:00",activity:"Media manana (snack)",supplements:"",notes:"Yogur griego o kefir + chocolate negro / fruta / barrita proteina."},
+    {time:"13:00",activity:"Comida (tupper)",supplements:"Vitamina D3+K2",notes:"Ultimo cafe (max 13:00). Tupper meal prep. D3 con grasa del tupper."},
+    {time:"15:00",activity:"Fin jornada",supplements:"",notes:""},
+    {time:"15:30",activity:"Llegada casa + pre-entreno",supplements:"L-tirosina 500mg",notes:"Tostada con aguacate o datiles o tortitas de arroz. 500ml agua."},
+    {time:"15:45",activity:"Entrenamiento (gym)",supplements:"",notes:"Sesion ~1h15. Pull/Push+Sprint/Pierna/FullBody segun dia."},
+    {time:"17:00",activity:"Post-entreno",supplements:"Creatina 5g + Whey 30g",notes:"Avena (50-60g) con leche o datiles/uvas. Carbos obligatorios."},
+    {time:"17:15",activity:"Preparar estudio",supplements:"Citicolina 250-500mg",notes:""},
+    {time:"17:30",activity:"Estudio oposicion",supplements:"",notes:"Pomodoro: 45 min ON / 5 min OFF."},
+    {time:"19:30",activity:"Fin estudio + cena",supplements:"",notes:"Cena rapida: proteina + verdura + carbo moderado."},
+    {time:"20:00",activity:"Post-cena",supplements:"Magnesio 400mg",notes:""},
+    {time:"20:30-21:30",activity:"Tiempo libre",supplements:"",notes:"Lectura, desconexion, ocio."},
+    {time:"22:00",activity:"Dormir",supplements:"",notes:"Objetivo: 8h de sueno. Sin pantallas 30 min antes."}
+  ],
+  weekend: [
+    {time:"08:00-09:00",activity:"Despertar + luz solar + desayuno",supplements:"Omega 3 + Melena de leon",notes:"Tortilla 3 huevos + verduras + tostada + cafe."},
+    {time:"09:30",activity:"Estiramientos 5 min",supplements:"",notes:"Psoas, isquios, piramidal."},
+    {time:"10:00",activity:"Estudio oposicion",supplements:"Citicolina 250-500mg",notes:"4-5h con Pomodoros (45/5)."},
+    {time:"11:30",activity:"Snack media manana",supplements:"",notes:"Fruta + chocolate negro o yogur griego/kefir."},
+    {time:"14:00",activity:"Comida",supplements:"Vitamina D3+K2",notes:"Meal prep del domingo."},
+    {time:"15:00-16:00",activity:"Rucking (dias OFF)",supplements:"",notes:"Paseo con mochila 5-10 kg, 30-45 min. Solo dias sin entreno."},
+    {time:"16:00",activity:"Entreno (si toca)",supplements:"L-tirosina 500mg",notes:"Si no: rucking o descanso activo."},
+    {time:"17:30",activity:"Post-entreno / merienda",supplements:"Creatina + whey (si entreno)",notes:""},
+    {time:"19:30-20:00",activity:"Cena",supplements:"",notes:"Cenar antes de las 20:00."},
+    {time:"20:30",activity:"Post-cena",supplements:"Magnesio 400mg",notes:""},
+    {time:"22:30-23:00",activity:"Dormir",supplements:"",notes:"MAX 23:00."}
+  ]
+};
+
+const SUPPLEMENTS = {
+  daily: [
+    {timing:"07:30 desayuno",name:"Omega 3 (EPA+DHA)",dose:"1-2g EPA+DHA",notes:"Con comida grasa."},
+    {timing:"07:30 desayuno",name:"Melena de leon",dose:"Segun producto",notes:"Con cafe. Nootropico real: NGF, neuroproteccion."},
+    {timing:"13:00 comida",name:"Vitamina D3 + K2",dose:"2000-4000 UI",notes:"Con grasa del tupper. Separada del Omega 3."},
+    {timing:"15:30 pre-entreno",name:"L-tirosina",dose:"500mg",notes:"Solo dias entreno. Max 5 dias seguidos."},
+    {timing:"17:00 post-entreno",name:"Creatina",dose:"5g",notes:"Todos los dias."},
+    {timing:"17:00 post-entreno",name:"Proteina whey",dose:"30g",notes:"Con avena o datiles."},
+    {timing:"17:15 pre-estudio",name:"Citicolina",dose:"250-500mg",notes:"Mejora acetilcolina, concentracion y memoria."},
+    {timing:"20:00 post-cena",name:"Magnesio bisglicinato",dose:"400mg",notes:"Dosis fija. Sueno profundo."}
+  ]
+};
+
+const MEALS = {
+  macros:{kcal:"~2240",protein:"~143g",carbs:"~226g",fat:"~77g"},
+  breakfast:{
+    title:"Desayuno (~07:30) ~420 kcal",
+    items:[
+      {name:"Pan integral (2 rebanadas)",qty:"80g",p:5,c:36,g:2},
+      {name:"Mantequilla",qty:"10g",p:0,c:0,g:8},
+      {name:"Pavo/jamon serrano",qty:"50g",p:9,c:1,g:2},
+      {name:"Aguacate",qty:"60g (~1/3)",p:1,c:3,g:9},
+      {name:"Cafe con melena de leon",qty:"1 taza",p:0,c:0,g:0}
+    ]
+  },
+  snacks:[
+    {name:"Yogur griego + chocolate negro",qty:"150g yogur + 20g choco",p:10,c:12,g:12},
+    {name:"Kefir + fruta",qty:"200ml kefir + 1 manzana",p:8,c:28,g:4},
+    {name:"Barrita de proteina",qty:"1 barrita (~60g)",p:20,c:18,g:6},
+    {name:"Uvas + queso fresco",qty:"150g uvas + 60g queso",p:7,c:28,g:4},
+    {name:"Kefir + chocolate negro",qty:"200ml kefir + 20g choco",p:7,c:14,g:8}
+  ],
+  tuppers:{
+    lunes:{protein:"Pollo al horno (200g)",carb:"Arroz integral (250g)",veg:"Brocoli salteado (150g)",extra:"10ml aceite oliva"},
+    martes:{protein:"Ternera guisada (200g)",carb:"Patata cocida (250g)",veg:"Judias verdes (150g)",extra:"10ml aceite oliva"},
+    miercoles:{protein:"Salmon al horno (200g)",carb:"Quinoa (250g cocida)",veg:"Espinacas con ajo (150g)",extra:""},
+    jueves:{protein:"Pavo plancha (200g)",carb:"Boniato asado (250g)",veg:"Ensalada variada (150g)",extra:"1/3 aguacate (60g)"},
+    viernes:{protein:"Tortilla 3 huevos (180g)",carb:"Arroz (250g cocido)",veg:"Pimientos asados (150g)",extra:""}
+  },
+  preWorkout:[
+    {name:"Tostada + aguacate",qty:"1 rebanada + 50g aguacate",p:3,c:20,g:8},
+    {name:"Datiles + chocolate negro",qty:"4 datiles + 15g choco",p:1,c:30,g:4},
+    {name:"Tortitas de arroz + aguacate",qty:"3 tortitas + 40g aguacate",p:2,c:24,g:7}
+  ],
+  postWorkout:[
+    {name:"Proteina whey",qty:"1 scoop (30g)",p:25,c:3,g:1},
+    {name:"Creatina",qty:"5g",p:0,c:0,g:0},
+    {name:"Copos de avena",qty:"60g",p:7,c:36,g:4},
+    {name:"Leche",qty:"200ml",p:7,c:10,g:4}
+  ],
+  dinners:[
+    {name:"Revuelto huevos + espinacas + tostada",qty:"3 huevos + 100g espinacas + 80g pan",p:28,c:38,time:"10 min"},
+    {name:"Atun lata + ensalada + pan",qty:"2 latas + 150g ensalada + 60g pan",p:38,c:24,time:"5 min"},
+    {name:"Pollo plancha + pure patata + ensalada",qty:"150g pollo + 200g patata + 100g ensalada",p:38,c:34,time:"15 min"},
+    {name:"Tortilla calabacin + pan integral",qty:"3 huevos + 150g calabacin + 80g pan",p:25,c:38,time:"10 min"},
+    {name:"Salmon lata + arroz + verdura vapor",qty:"150g salmon + 150g arroz + 150g verdura",p:35,c:32,time:"5 min"},
+    {name:"Lomo plancha + boniato micro + brocoli",qty:"180g lomo + 200g boniato + 100g brocoli",p:40,c:40,time:"15 min"},
+    {name:"Huevos cocidos + hummus + crudites + pan",qty:"3 huevos + 60g hummus + 100g crudites + 60g pan",p:26,c:32,time:"5 min"}
+  ]
+};
+
+const MEAL_PREP = {
+  items:[
+    {name:"Pollo al horno",qty:"1 kg",how:"Sazonar con especias. Hornear 200C, 25-30 min."},
+    {name:"Salmon/pescado",qty:"400g (2 filetes)",how:"Hornear 180C, 15-20 min con limon."},
+    {name:"Ternera guisada",qty:"500g",how:"Guisar con verduras y caldo, ~45 min."},
+    {name:"Arroz integral",qty:"400g seco (~1kg cocido)",how:"Cocer segun paquete."},
+    {name:"Boniatos",qty:"4-5 unidades",how:"Hornear 200C, 40-50 min."},
+    {name:"Patatas",qty:"500g",how:"Pelar, trocear, cocer 20 min."},
+    {name:"Brocoli",qty:"500g",how:"Asar 15 min o saltear con ajo."},
+    {name:"Pimientos",qty:"4 unidades",how:"Asar en horno 20 min."},
+    {name:"Judias verdes",qty:"400g",how:"Cocer 10 min."},
+    {name:"Espinacas",qty:"300g",how:"Lavar y guardar crudas."},
+    {name:"Quinoa",qty:"200g seco",how:"Cocer segun paquete."},
+    {name:"Huevos cocidos",qty:"6-8",how:"Cocer 10-12 min. Pelar."}
+  ],
+  distribution:[
+    {day:"Lunes",storage:"Nevera",contents:"Pollo + arroz integral + brocoli"},
+    {day:"Martes",storage:"Nevera",contents:"Ternera guisada + patata + judias verdes"},
+    {day:"Miercoles",storage:"Nevera",contents:"Salmon + quinoa + espinacas"},
+    {day:"Jueves",storage:"Congelador",contents:"Pavo/pollo sobrante + boniato + ensalada"},
+    {day:"Viernes",storage:"Congelador",contents:"Tortilla + arroz + pimientos"}
+  ],
+  steps:[
+    "1. Encender horno a 200C",
+    "2. Poner arroz y quinoa a cocer",
+    "3. Meter pollo + boniatos al horno",
+    "4. Poner huevos a cocer, cocer patatas y judias",
+    "5. Preparar ternera guisada (~45 min)",
+    "6. Meter salmon + brocoli + pimientos al horno",
+    "7. Lavar espinacas y guardar",
+    "8. Enfriar, repartir en tuppers, etiquetar"
+  ]
+};
+
+const SHOPPING = [
+  {category:"PROTEINAS",items:[
+    {name:"Pechugas/muslos pollo",qty:"1 kg"},{name:"Salmon fresco",qty:"400g"},
+    {name:"Ternera para guisar",qty:"500g"},{name:"Pavo fiambre",qty:"200g"},
+    {name:"Jamon serrano",qty:"200g"},{name:"Lomo de cerdo",qty:"300g"},
+    {name:"Atun en lata",qty:"4 latas"},{name:"Salmon ahumado/lata",qty:"2 paquetes"},
+    {name:"Huevos",qty:"2 docenas"},{name:"Proteina whey",qty:"~210g/sem"}
+  ]},
+  {category:"CARBOHIDRATOS",items:[
+    {name:"Pan integral",qty:"2 unidades"},{name:"Arroz integral",qty:"400g"},
+    {name:"Quinoa",qty:"200g"},{name:"Boniatos",qty:"4-5 unid"},
+    {name:"Patatas",qty:"500g"},{name:"Copos de avena",qty:"500g"},
+    {name:"Datiles",qty:"250g"},{name:"Tortitas de arroz",qty:"1 paquete"}
+  ]},
+  {category:"VERDURAS Y FRUTAS",items:[
+    {name:"Brocoli",qty:"500g"},{name:"Espinacas",qty:"300g"},
+    {name:"Judias verdes",qty:"400g"},{name:"Pimientos",qty:"4 unid"},
+    {name:"Calabacin",qty:"2 unid"},{name:"Tomates",qty:"4-5 unid"},
+    {name:"Pepino",qty:"2 unid"},{name:"Cebolla",qty:"2 unid"},
+    {name:"Ajo",qty:"1 cabeza"},{name:"Lechuga/ensalada",qty:"1 bolsa"},
+    {name:"Aguacates",qty:"3-4 unid"},{name:"Manzanas",qty:"3-4 unid"},
+    {name:"Uvas",qty:"500g"},{name:"Peras",qty:"3-4 unid"},
+    {name:"Limon",qty:"2 unid"}
+  ]},
+  {category:"LACTEOS",items:[
+    {name:"Yogur griego natural",qty:"4-6 unid"},{name:"Kefir",qty:"1 litro"},
+    {name:"Leche",qty:"1 litro"},{name:"Mantequilla",qty:"1 unid"},
+    {name:"Queso fresco",qty:"1 unid"}
+  ]},
+  {category:"OTROS",items:[
+    {name:"Chocolate negro >70%",qty:"2 tabletas"},{name:"Aceitunas",qty:"1 bote"},
+    {name:"Aceite oliva virgen",qty:"Reponer"},{name:"Especias",qty:"Reponer"},
+    {name:"Hummus",qty:"1 bote"},{name:"Requesion",qty:"2 unid"}
+  ]}
+];
+
+// --- STATE ---
+function getState(key, fallback) {
+  try { return JSON.parse(localStorage.getItem('pr_' + key)) ?? fallback; }
+  catch { return fallback; }
+}
+function setState(key, val) {
+  localStorage.setItem('pr_' + key, JSON.stringify(val));
+}
+function todayKey() { return new Date().toISOString().slice(0, 10); }
+function weekKey() {
+  const d = new Date();
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const weekNum = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${weekNum}`;
+}
+
+const DAYNAMES = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+const DAYNAMES_DISPLAY = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
+
+function parseTime(t) {
+  const m = t.match(/^(\d{1,2}):(\d{2})/);
+  return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : 0;
+}
+function parseTimeEnd(t) {
+  const parts = t.split('-');
+  if (parts.length === 2) return parseTime(parts[1]);
+  return parseTime(parts[0]);
+}
+function nowMinutes() {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+function isWeekend() {
+  const d = new Date().getDay();
+  return d === 0 || d === 6;
+}
+function todayDayName() { return DAYNAMES[new Date().getDay()]; }
+
+function getTrainingWeek() { return getState('week', 1); }
+function setTrainingWeek(w) { setState('week', w); }
+function getDayMap() { return getState('daymap', {lunes:1,martes:2,miercoles:3,viernes:4}); }
+function setDayMap(m) { setState('daymap', m); }
+function isDark() { return getState('dark', false); }
+
+function getBlockForWeek(w) {
+  for (const b of TRAINING.blocks) {
+    if (w >= b.weeks[0] && w <= b.weeks[1]) return b;
+  }
+  return TRAINING.blocks[0];
+}
+
+function isHerniaProhibited(exName) {
+  const n = exName.toLowerCase();
+  return HERNIA.prohibited.some(p => {
+    const words = p.item.toLowerCase().split(/\s+/);
+    return words.some(w => w.length > 3 && n.includes(w));
+  });
+}
+function isHerniaSafe(exName) {
+  const n = exName.toLowerCase();
+  return HERNIA.safeCore.some(p => {
+    const words = p.item.toLowerCase().split(/\s+/);
+    return words.some(w => w.length > 3 && n.includes(w));
+  });
+}
+
+// --- NAV ---
+const navBtns = document.querySelectorAll('nav button');
+const views = document.querySelectorAll('.view');
+navBtns.forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+function switchTab(tab) {
+  navBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  views.forEach(v => v.classList.toggle('active', v.id === 'v-' + tab));
+  if (tab === 'hoy') renderHoy();
+  if (tab === 'entreno') renderEntreno();
+  if (tab === 'comida') renderComida();
+  if (tab === 'config') renderConfig();
+}
+
+// --- MODAL ---
+const modal = document.getElementById('glossary-modal');
+modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+
+function showGlossary(name) {
+  const keys = Object.keys(GLOSSARY);
+  const nl = name.toLowerCase();
+  const key = keys.find(k => k.toLowerCase() === nl) ||
+    keys.find(k => nl.includes(k.toLowerCase()) || k.toLowerCase().includes(nl));
+  const entry = key ? GLOSSARY[key] : null;
+  document.getElementById('modal-title').textContent = name;
+  document.getElementById('modal-cat').textContent = entry ? entry.category : '';
+  document.getElementById('modal-desc').textContent = entry ? entry.description : 'Sin definicion disponible.';
+  modal.classList.add('show');
+}
+
+// --- HOY ---
+function renderHoy() {
+  const week = getTrainingWeek();
+  const block = getBlockForWeek(week);
+  const today = new Date();
+  const dayName = DAYNAMES_DISPLAY[today.getDay()];
+
+  document.getElementById('hoy-header').innerHTML =
+    `<div class="card-title">Semana ${week} - Bloque ${block.id}: ${block.name}</div>
+     <div class="card-subtitle">${dayName}, ${today.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})}</div>`;
+
+  const sched = isWeekend() ? SCHEDULE.weekend : SCHEDULE.weekday;
+  const now = nowMinutes();
+  let html = '';
+  sched.forEach((s, i) => {
+    const start = parseTime(s.time);
+    const end = i < sched.length - 1 ? parseTime(sched[i + 1].time) : start + 60;
+    let cls = '';
+    if (now >= end) cls = 'past';
+    else if (now >= start && now < end) cls = 'now';
+    html += `<div class="tl-item ${cls}">
+      <div class="tl-time">${s.time}</div>
+      <div class="tl-act">${s.activity}</div>
+      ${s.supplements ? `<div class="tl-supps">${s.supplements}</div>` : ''}
+      ${s.notes ? `<div class="tl-notes">${s.notes}</div>` : ''}
+    </div>`;
+  });
+  document.getElementById('hoy-timeline').innerHTML = html;
+
+  // Tupper
+  const dn = todayDayName();
+  const tupper = MEALS.tuppers[dn];
+  const tupperEl = document.getElementById('hoy-tupper');
+  if (tupper) {
+    tupperEl.innerHTML = `<div class="card-title">Tupper de hoy (${dn})</div>
+      <div class="tupper-grid">
+        <span class="tupper-label">Proteina</span><span>${tupper.protein}</span>
+        <span class="tupper-label">Carbo</span><span>${tupper.carb}</span>
+        <span class="tupper-label">Verdura</span><span>${tupper.veg}</span>
+        ${tupper.extra ? `<span class="tupper-label">Extra</span><span>${tupper.extra}</span>` : ''}
+      </div>`;
+  } else {
+    tupperEl.innerHTML = `<div class="card-title">Comida</div><div class="card-subtitle">Fin de semana: meal prep o comida libre.</div>`;
+  }
+
+  // Supplements
+  const suppKey = 'supps_' + todayKey();
+  const suppChecked = getState(suppKey, {});
+  let suppHtml = '<div class="card-title">Suplementos de hoy</div>';
+  SUPPLEMENTS.daily.forEach((s, i) => {
+    const id = 'sup_' + i;
+    suppHtml += `<div class="ex-done">
+      <label class="chk"><input type="checkbox" data-suppkey="${suppKey}" data-idx="${i}" ${suppChecked[i] ? 'checked' : ''}><span></span></label>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${s.name} - ${s.dose}</div>
+        <div style="font-size:11px;color:var(--text2)">${s.timing} | ${s.notes}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('hoy-supps').innerHTML = suppHtml;
+  document.getElementById('hoy-supps').querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const key = cb.dataset.suppkey;
+      const idx = cb.dataset.idx;
+      const state = getState(key, {});
+      state[idx] = cb.checked;
+      setState(key, state);
+    });
+  });
+
+  // Training today?
+  const dm = getDayMap();
+  const trainingEl = document.getElementById('hoy-training');
+  const dayIdx = Object.entries(dm).find(([k]) => k === dn);
+  if (dayIdx) {
+    const dayNum = dayIdx[1];
+    const dayType = TRAINING.days[dayNum - 1];
+    trainingEl.style.display = '';
+    trainingEl.innerHTML = `<div class="card-title">Entreno de hoy</div>
+      <div style="font-size:14px;margin-bottom:8px">${dayType}</div>
+      <button class="pill active" id="btn-go-entreno">Ver entreno</button>`;
+    document.getElementById('btn-go-entreno').addEventListener('click', () => {
+      entState.day = dayNum;
+      switchTab('entreno');
+    });
+  } else {
+    trainingEl.style.display = 'none';
+  }
+}
+
+// --- ENTRENO ---
+const entState = { block: 'A', week: 1, day: 1 };
+const timerState = { running: false, startTime: null, elapsed: 0, intervalId: null };
+
+function fmtTimer(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function fmtDuration(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  if (h > 0) return `${h}h ${m}min`;
+  return `${m}min`;
+}
+
+function getTimerKey() {
+  return 'timer_' + todayKey() + '_' + entState.week + '-' + entState.day;
+}
+
+function renderTimer() {
+  const el = document.getElementById('ent-timer');
+  const saved = getState(getTimerKey(), null);
+
+  if (saved && saved.duration && !timerState.running) {
+    el.innerHTML = `<div class="timer-bar">
+      <span class="timer-done">Entreno completado: ${fmtDuration(saved.duration)}</span>
+      <span class="timer-display" style="font-size:16px">${fmtTimer(saved.duration)}</span>
+      <button class="timer-btn start" id="timer-restart" style="font-size:11px;padding:6px 10px">Nuevo</button>
+    </div>`;
+    document.getElementById('timer-restart').addEventListener('click', () => {
+      setState(getTimerKey(), null);
+      timerState.running = false; timerState.elapsed = 0; timerState.startTime = null;
+      renderTimer();
+    });
+    return;
+  }
+
+  if (!timerState.running && timerState.elapsed === 0) {
+    el.innerHTML = `<div class="timer-bar">
+      <button class="timer-btn start" id="timer-start">Iniciar entreno</button>
+      <span class="timer-display">${fmtTimer(0)}</span>
+    </div>`;
+    document.getElementById('timer-start').addEventListener('click', () => {
+      timerState.running = true;
+      timerState.startTime = new Date().toISOString();
+      timerState.elapsed = 0;
+      timerState.intervalId = setInterval(() => {
+        timerState.elapsed++;
+        const disp = document.getElementById('timer-disp');
+        if (disp) disp.textContent = fmtTimer(timerState.elapsed);
+      }, 1000);
+      renderTimer();
+    });
+  } else if (timerState.running) {
+    el.innerHTML = `<div class="timer-bar">
+      <button class="timer-btn pause" id="timer-pause">Pausar</button>
+      <button class="timer-btn stop" id="timer-stop">Finalizar</button>
+      <span class="timer-display" id="timer-disp">${fmtTimer(timerState.elapsed)}</span>
+    </div>`;
+    document.getElementById('timer-pause').addEventListener('click', () => {
+      clearInterval(timerState.intervalId);
+      timerState.running = false;
+      renderTimer();
+    });
+    document.getElementById('timer-stop').addEventListener('click', () => {
+      clearInterval(timerState.intervalId);
+      timerState.running = false;
+      setState(getTimerKey(), {
+        start: timerState.startTime,
+        end: new Date().toISOString(),
+        duration: timerState.elapsed
+      });
+      timerState.elapsed = 0; timerState.startTime = null;
+      renderTimer();
+    });
+  } else {
+    el.innerHTML = `<div class="timer-bar">
+      <button class="timer-btn resume" id="timer-resume">Reanudar</button>
+      <button class="timer-btn stop" id="timer-stop2">Finalizar</button>
+      <span class="timer-display">${fmtTimer(timerState.elapsed)}</span>
+    </div>`;
+    document.getElementById('timer-resume').addEventListener('click', () => {
+      timerState.running = true;
+      timerState.intervalId = setInterval(() => {
+        timerState.elapsed++;
+        const disp = document.getElementById('timer-disp');
+        if (disp) disp.textContent = fmtTimer(timerState.elapsed);
+      }, 1000);
+      renderTimer();
+    });
+    document.getElementById('timer-stop2').addEventListener('click', () => {
+      timerState.running = false;
+      setState(getTimerKey(), {
+        start: timerState.startTime,
+        end: new Date().toISOString(),
+        duration: timerState.elapsed
+      });
+      timerState.elapsed = 0; timerState.startTime = null;
+      renderTimer();
+    });
+  }
+}
+
+function renderEntreno() {
+  entState.week = getTrainingWeek();
+  entState.block = getBlockForWeek(entState.week).id;
+  renderTimer();
+
+  // Blocks
+  let bhtml = '';
+  TRAINING.blocks.forEach(b => {
+    bhtml += `<button class="pill ${b.id === entState.block ? 'active' : ''}" data-block="${b.id}">${b.id}: ${b.name}</button>`;
+  });
+  document.getElementById('ent-blocks').innerHTML = bhtml;
+  document.getElementById('ent-blocks').querySelectorAll('.pill').forEach(p => {
+    p.addEventListener('click', () => {
+      const b = TRAINING.blocks.find(x => x.id === p.dataset.block);
+      entState.block = b.id;
+      entState.week = b.weeks[0];
+      renderEntWeeks();
+      renderEntDays();
+      renderExercises();
+    });
+  });
+
+  renderEntWeeks();
+  renderEntDays();
+  renderExercises();
+}
+
+function renderEntWeeks() {
+  const b = TRAINING.blocks.find(x => x.id === entState.block);
+  let html = '';
+  for (let w = b.weeks[0]; w <= b.weeks[1]; w++) {
+    html += `<button class="pill ${w === entState.week ? 'active' : ''}" data-w="${w}">S${w}</button>`;
+  }
+  document.getElementById('ent-weeks').innerHTML = html;
+  document.getElementById('ent-weeks').querySelectorAll('.pill').forEach(p => {
+    p.addEventListener('click', () => {
+      entState.week = parseInt(p.dataset.w);
+      renderEntWeeks();
+      renderExercises();
+    });
+  });
+}
+
+function renderEntDays() {
+  let html = '';
+  TRAINING.days.forEach((d, i) => {
+    const num = i + 1;
+    html += `<button class="pill ${num === entState.day ? 'active' : ''}" data-d="${num}">${d}</button>`;
+  });
+  document.getElementById('ent-days').innerHTML = html;
+  document.getElementById('ent-days').querySelectorAll('.pill').forEach(p => {
+    p.addEventListener('click', () => {
+      entState.day = parseInt(p.dataset.d);
+      renderEntDays();
+      renderExercises();
+    });
+  });
+}
+
+let _exLogDebounce = null;
+function saveExLog(logKey, idx, field, value) {
+  clearTimeout(_exLogDebounce);
+  _exLogDebounce = setTimeout(() => {
+    const log = getState(logKey, {});
+    if (!log[idx]) log[idx] = {};
+    log[idx][field] = value === '' ? null : Number(value);
+    setState(logKey, log);
+  }, 400);
+}
+
+function renderExercises() {
+  const key = `${entState.week}-${entState.day}`;
+  const exercises = TRAINING.workouts[key];
+  const container = document.getElementById('ent-exercises');
+  if (!exercises) {
+    container.innerHTML = '<div class="card"><div class="card-subtitle">No hay datos para esta combinacion.</div></div>';
+    return;
+  }
+
+  const doneKey = 'exdone_' + todayKey() + '_' + key;
+  const done = getState(doneKey, {});
+  const logKey = 'exlog_' + todayKey() + '_' + key;
+  const log = getState(logKey, {});
+
+  let html = '';
+  exercises.forEach((ex, i) => {
+    const warn = isHerniaProhibited(ex.name);
+    const safe = isHerniaSafe(ex.name);
+    const l = log[i] || {};
+    const weightVal = l.weight != null ? l.weight : (ex.weight && ex.weight !== '--' ? ex.weight : '');
+    const repsVal = l.reps != null ? l.reps : '';
+    const rpeVal = l.rpe != null ? l.rpe : (ex.rpe && ex.rpe !== '--' ? ex.rpe : '');
+    html += `<div class="ex-card ${warn ? 'hernia-warn' : ''}">
+      <div class="ex-name" data-glossary="${ex.name}">${ex.name}${safe ? ' <span style="color:var(--baja);font-size:11px">Hernia-safe</span>' : ''}</div>
+      <div class="ex-grid">
+        <div class="ex-grid-head">Series</div><div class="ex-grid-head">Peso</div><div class="ex-grid-head">Reps</div>
+        <div class="ex-grid-head">Desc.</div><div class="ex-grid-head">RPE</div>
+        <div>${ex.sets || '--'}</div>
+        <div><input type="number" class="ex-input" data-logkey="${logKey}" data-idx="${i}" data-field="weight" value="${weightVal}" placeholder="${ex.weight || 'kg'}"></div>
+        <div><input type="number" class="ex-input" data-logkey="${logKey}" data-idx="${i}" data-field="reps" value="${repsVal}" placeholder="reps"></div>
+        <div>${ex.rest || '--'}</div>
+        <div><input type="number" class="ex-input" data-logkey="${logKey}" data-idx="${i}" data-field="rpe" value="${rpeVal}" placeholder="${ex.rpe || 'RPE'}" min="1" max="10" step="0.5"></div>
+      </div>
+      ${ex.tempo && ex.tempo !== '--' ? `<div class="ex-notes">Tempo: ${ex.tempo}</div>` : ''}
+      ${ex.notes ? `<div class="ex-notes">${ex.notes}</div>` : ''}
+      ${warn ? '<div class="ex-warn">&#9888; Posible riesgo hernia - revisar alternativas</div>' : ''}
+      <div class="ex-done">
+        <label class="chk"><input type="checkbox" data-donekey="${doneKey}" data-idx="${i}" ${done[i] ? 'checked' : ''}><span></span></label>
+        <span style="font-size:12px;color:var(--text2)">Completado</span>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll('.ex-name').forEach(el => {
+    el.addEventListener('click', () => showGlossary(el.dataset.glossary));
+  });
+  container.querySelectorAll('.ex-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      saveExLog(inp.dataset.logkey, inp.dataset.idx, inp.dataset.field, inp.value);
+    });
+  });
+  container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const k = cb.dataset.donekey;
+      const s = getState(k, {});
+      s[cb.dataset.idx] = cb.checked;
+      setState(k, s);
+    });
+  });
+}
+
+// --- COMIDA ---
+function renderComida() {
+  renderComidaHoy();
+  renderComidaPrep();
+  renderComidaCompra();
+
+  document.querySelectorAll('#com-tabs .pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('#com-tabs .pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      const t = p.dataset.ctab;
+      document.getElementById('com-hoy').style.display = t === 'hoy' ? '' : 'none';
+      document.getElementById('com-prep').style.display = t === 'prep' ? '' : 'none';
+      document.getElementById('com-compra').style.display = t === 'compra' ? '' : 'none';
+    });
+  });
+}
+
+function foodRow(item) {
+  return `<div class="food-item">
+    <span class="name">${item.name}</span>
+    <span class="macro">${item.qty}</span>
+    <span class="macro">P${item.p} C${item.c} G${item.g}</span>
+  </div>`;
+}
+
+function collapsible(title, content) {
+  return `<div class="card">
+    <button class="collapse-btn" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">${title}</button>
+    <div class="collapse-body">${content}</div>
+  </div>`;
+}
+
+function renderComidaHoy() {
+  const m = MEALS.macros;
+  let html = `<div class="macros">
+    <div class="macro-pill"><div class="val">${m.kcal}</div><div class="lbl">kcal</div></div>
+    <div class="macro-pill"><div class="val">${m.protein}</div><div class="lbl">Proteina</div></div>
+    <div class="macro-pill"><div class="val">${m.carbs}</div><div class="lbl">Carbos</div></div>
+    <div class="macro-pill"><div class="val">${m.fat}</div><div class="lbl">Grasa</div></div>
+  </div>`;
+
+  // Breakfast
+  html += `<div class="card"><div class="card-title">${MEALS.breakfast.title}</div>`;
+  MEALS.breakfast.items.forEach(i => html += foodRow(i));
+  html += '</div>';
+
+  // Snacks
+  let snackHtml = '';
+  MEALS.snacks.forEach(i => snackHtml += foodRow(i));
+  html += collapsible('Snacks media manana', snackHtml);
+
+  // Tupper
+  const dn = todayDayName();
+  const tupper = MEALS.tuppers[dn];
+  if (tupper) {
+    html += `<div class="card"><div class="card-title">Tupper (${dn})</div>
+      <div class="tupper-grid">
+        <span class="tupper-label">Proteina</span><span>${tupper.protein}</span>
+        <span class="tupper-label">Carbo</span><span>${tupper.carb}</span>
+        <span class="tupper-label">Verdura</span><span>${tupper.veg}</span>
+        ${tupper.extra ? `<span class="tupper-label">Extra</span><span>${tupper.extra}</span>` : ''}
+      </div></div>`;
+  }
+
+  // Pre-workout
+  let preHtml = '';
+  MEALS.preWorkout.forEach(i => preHtml += foodRow(i));
+  html += collapsible('Pre-entreno', preHtml);
+
+  // Post-workout
+  html += `<div class="card"><div class="card-title">Post-entreno</div>`;
+  MEALS.postWorkout.forEach(i => html += foodRow(i));
+  html += '</div>';
+
+  // Dinners
+  let dinHtml = '';
+  MEALS.dinners.forEach(d => {
+    dinHtml += `<div class="food-item">
+      <span class="name">${d.name}<br><small style="color:var(--text2)">${d.qty}</small></span>
+      <span class="macro">P${d.p} C${d.c}</span>
+      <span class="macro">${d.time}</span>
+    </div>`;
+  });
+  html += collapsible('Cenas (opciones)', dinHtml);
+
+  document.getElementById('com-hoy').innerHTML = html;
+}
+
+function renderComidaPrep() {
+  let html = '<div class="card"><div class="card-title">Que cocinar</div>';
+  MEAL_PREP.items.forEach(i => {
+    html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <strong>${i.name}</strong> (${i.qty})<br><span style="color:var(--text2)">${i.how}</span></div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-title">Distribucion tuppers</div><table class="tbl"><tr><th>Dia</th><th>Almacen</th><th>Contenido</th></tr>';
+  MEAL_PREP.distribution.forEach(d => {
+    html += `<tr><td>${d.day}</td><td>${d.storage}</td><td>${d.contents}</td></tr>`;
+  });
+  html += '</table></div>';
+
+  html += '<div class="card"><div class="card-title">Orden de preparacion</div>';
+  MEAL_PREP.steps.forEach(s => {
+    html += `<div class="prep-step">${s}</div>`;
+  });
+  html += '</div>';
+
+  document.getElementById('com-prep').innerHTML = html;
+}
+
+function renderComidaCompra() {
+  const wk = weekKey();
+  const shopKey = 'shop_' + wk;
+  const checked = getState(shopKey, {});
+  let html = '';
+  let idx = 0;
+  SHOPPING.forEach(cat => {
+    html += `<div class="card"><div class="shop-cat">${cat.category}</div>`;
+    cat.items.forEach(item => {
+      const ci = idx++;
+      html += `<div class="shop-item">
+        <label class="chk"><input type="checkbox" data-shopkey="${shopKey}" data-idx="${ci}" ${checked[ci] ? 'checked' : ''}><span></span></label>
+        <span>${item.name}</span>
+        <span class="qty">${item.qty}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('com-compra').innerHTML = html;
+  document.getElementById('com-compra').querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const s = getState(cb.dataset.shopkey, {});
+      s[cb.dataset.idx] = cb.checked;
+      setState(cb.dataset.shopkey, s);
+    });
+  });
+}
+
+// --- CONFIG ---
+function renderConfig() {
+  let week = getTrainingWeek();
+  const block = getBlockForWeek(week);
+  const dm = getDayMap();
+  const dark = isDark();
+
+  const dayOptions = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
+    .map(d => `<option value="${d}">${d.charAt(0).toUpperCase()+d.slice(1)}</option>`).join('');
+
+  let html = `
+    <div class="cfg-row">
+      <span class="cfg-label">Semana de entreno</span>
+      <div class="num-ctrl">
+        <button id="cfg-w-minus">-</button>
+        <span id="cfg-w-val">${week}</span>
+        <button id="cfg-w-plus">+</button>
+      </div>
+    </div>
+    <div class="cfg-row">
+      <span class="cfg-label" style="font-size:12px;color:var(--text2)">Bloque ${block.id}: ${block.name}</span>
+    </div>
+    <div class="card-title" style="margin-top:12px;margin-bottom:8px">Dias de entreno</div>`;
+
+  const dayLabels = ['PULL','PUSH + SPRINT','PIERNA','FULL BODY'];
+  const currentMap = getDayMap();
+  const mapKeys = Object.keys(currentMap);
+
+  for (let i = 0; i < 4; i++) {
+    const dayNum = i + 1;
+    const assignedDay = Object.entries(currentMap).find(([k, v]) => v === dayNum);
+    const selDay = assignedDay ? assignedDay[0] : 'lunes';
+    html += `<div class="cfg-row">
+      <span class="cfg-label">${dayLabels[i]}</span>
+      <select data-daynum="${dayNum}" class="cfg-day-sel">
+        ${['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
+          .map(d => `<option value="${d}" ${d === selDay ? 'selected' : ''}>${d.charAt(0).toUpperCase()+d.slice(1)}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+
+  html += `
+    <div class="cfg-row" style="margin-top:12px">
+      <span class="cfg-label">Modo oscuro</span>
+      <label class="toggle"><input type="checkbox" id="cfg-dark" ${dark ? 'checked' : ''}><span class="slider"></span></label>
+    </div>`;
+
+  // Hernia section
+  html += `<div style="margin-top:16px">
+    <button class="collapse-btn" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">Reglas hernia discal</button>
+    <div class="collapse-body hernia-section">
+      <h4>Ejercicios prohibidos</h4><ul>`;
+  HERNIA.prohibited.forEach(p => {
+    html += `<li>${p.item} <span class="detail">- ${p.detail}</span></li>`;
+  });
+  html += `</ul><h4>Core seguro</h4><ul>`;
+  HERNIA.safeCore.forEach(p => {
+    html += `<li>${p.item} <span class="detail">- ${p.detail}</span></li>`;
+  });
+  html += `</ul><h4>Reglas sprint</h4><ul>`;
+  HERNIA.sprintRules.forEach(p => {
+    html += `<li>${p.item} <span class="detail">- ${p.detail}</span></li>`;
+  });
+  html += `</ul><h4>Estiramientos</h4><ul>`;
+  HERNIA.stretching.forEach(p => {
+    html += `<li>${p.item} <span class="detail">- ${p.detail}</span></li>`;
+  });
+  html += `</ul></div></div>`;
+
+  html += `<div class="export-section">
+    <h4>Datos de entrenamiento</h4>
+    <p style="font-size:12px;color:var(--text2);margin:0 0 10px">Exporta tus registros de entreno para pasarlos a otro dispositivo</p>
+    <button class="export-btn primary" id="cfg-export">Exportar datos</button>
+    <button class="export-btn secondary" id="cfg-import-btn">Importar datos</button>
+    <input type="file" id="cfg-import-file" accept=".json" style="display:none">
+  </div>`;
+
+  html += `<button class="btn-danger" id="cfg-reset" style="margin-top:16px">Resetear todo</button>`;
+
+  document.getElementById('cfg-content').innerHTML = html;
+
+  // Events
+  document.getElementById('cfg-w-minus').addEventListener('click', () => {
+    let w = getTrainingWeek();
+    if (w > 1) { setTrainingWeek(w - 1); renderConfig(); }
+  });
+  document.getElementById('cfg-w-plus').addEventListener('click', () => {
+    let w = getTrainingWeek();
+    if (w < 18) { setTrainingWeek(w + 1); renderConfig(); }
+  });
+  document.getElementById('cfg-dark').addEventListener('change', function() {
+    setState('dark', this.checked);
+    applyTheme();
+  });
+  document.querySelectorAll('.cfg-day-sel').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const newMap = {};
+      document.querySelectorAll('.cfg-day-sel').forEach(s => {
+        newMap[s.value] = parseInt(s.dataset.daynum);
+      });
+      setDayMap(newMap);
+    });
+  });
+  document.getElementById('cfg-export').addEventListener('click', () => {
+    const data = { version: 1, exportDate: todayKey(), logs: {}, timers: {} };
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.startsWith('pr_exlog_')) data.logs[k] = JSON.parse(localStorage.getItem(k));
+      if (k.startsWith('pr_timer_')) data.timers[k] = JSON.parse(localStorage.getItem(k));
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `planrafa_entrenos_${todayKey()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.getElementById('cfg-import-btn').addEventListener('click', () => {
+    document.getElementById('cfg-import-file').click();
+  });
+  document.getElementById('cfg-import-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.logs) Object.entries(data.logs).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
+        if (data.timers) Object.entries(data.timers).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
+        alert('Datos importados correctamente');
+      } catch { alert('Error al leer el archivo'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+  document.getElementById('cfg-reset').addEventListener('click', () => {
+    if (confirm('Seguro que quieres borrar todos los datos guardados?')) {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k.startsWith('pr_')) keys.push(k);
+      }
+      keys.forEach(k => localStorage.removeItem(k));
+      applyTheme();
+      renderConfig();
+    }
+  });
+}
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', isDark() ? 'dark' : 'light');
+  document.querySelector('meta[name="theme-color"]').content = isDark() ? '#1a1a1a' : '#1F4E79';
+}
+
+// INIT
+applyTheme();
+renderHoy();
+
+})();
+</script>
+</body>
+</html>
