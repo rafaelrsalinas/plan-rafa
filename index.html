@@ -297,6 +297,50 @@ nav button.active svg{transform:scale(1.1)}
 .glossary-filter-pills::-webkit-scrollbar{display:none}
 .glossary-count{font-size:11px;color:var(--text3);margin-bottom:8px}
 
+/* ===== PROGRESSION ===== */
+.prog-chart{position:relative;height:180px;margin:12px 0;overflow:hidden}
+.prog-chart svg{width:100%;height:100%}
+.prog-line{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.prog-dot{r:4;stroke-width:2;stroke:var(--card)}
+.prog-area{opacity:.15}
+.prog-grid-line{stroke:var(--border);stroke-width:1;stroke-dasharray:4 4}
+.prog-label{font-size:10px;fill:var(--text3);font-family:var(--mono)}
+.prog-value-label{font-size:11px;fill:var(--text);font-weight:700;font-family:var(--mono);text-anchor:middle}
+.prog-tooltip{position:absolute;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-xs);padding:8px 10px;font-size:12px;
+  box-shadow:var(--shadow);pointer-events:none;z-index:10;white-space:nowrap;display:none}
+.prog-select{width:100%;padding:10px 14px;border-radius:var(--radius-xs);
+  border:1.5px solid var(--border2);background:var(--bg);color:var(--text);
+  font-size:14px;font-weight:500;outline:none;-webkit-appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center}
+.prog-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.prog-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.prog-table th{text-align:left;padding:8px 6px;border-bottom:2px solid var(--border);
+  font-weight:700;color:var(--text2);font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+.prog-table td{padding:7px 6px;border-bottom:1px solid var(--border);font-family:var(--mono)}
+.prog-table td.up{color:var(--success)}
+.prog-table td.down{color:var(--danger)}
+.prog-table td.same{color:var(--text3)}
+.prog-tabs{display:flex;gap:4px;margin-bottom:10px}
+.prog-tab{flex:1;padding:8px;border-radius:var(--radius-xs);border:1.5px solid var(--border2);
+  background:var(--bg);color:var(--text2);font-size:12px;font-weight:600;text-align:center;
+  cursor:pointer;transition:all .2s var(--ease)}
+.prog-tab.active{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+
+/* ===== HISTORY DETAIL ===== */
+.hist-detail{margin-top:8px}
+.hist-detail-header{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;cursor:pointer}
+.hist-detail-exercises{display:none;padding:0 0 8px}
+.hist-detail-exercises.open{display:block}
+.hist-ex-row{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;
+  padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center}
+.hist-ex-row:last-child{border-bottom:none}
+.hist-ex-name{font-weight:600;font-size:12px}
+.hist-ex-val{font-family:var(--mono);text-align:center;font-size:12px;
+  background:var(--bg);padding:2px 6px;border-radius:4px;color:var(--text2)}
+
 /* ===== COLLAPSIBLE ===== */
 .collapse-btn{width:100%;display:flex;align-items:center;justify-content:space-between;
   padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
@@ -478,8 +522,30 @@ nav button.active svg{transform:scale(1.1)}
   <!-- Exercises -->
   <div id="ent-exercises"></div>
 
+  <!-- Progression -->
+  <div style="margin-top:16px">
+    <button class="collapse-btn" id="prog-toggle">📊 Progresion por ejercicio</button>
+    <div class="collapse-body" id="prog-section">
+      <select class="prog-select" id="prog-exercise-select">
+        <option value="">Selecciona un ejercicio...</option>
+      </select>
+      <div class="prog-tabs" id="prog-tabs" style="margin-top:10px">
+        <button class="prog-tab active" data-metric="weight">Peso (kg)</button>
+        <button class="prog-tab" data-metric="reps">Reps</button>
+        <button class="prog-tab" data-metric="rpe">RPE</button>
+      </div>
+      <div id="prog-chart-container"></div>
+      <div id="prog-table-container"></div>
+    </div>
+  </div>
+
   <!-- History -->
-  <div id="ent-history" style="margin-top:16px"></div>
+  <div style="margin-top:12px">
+    <button class="collapse-btn" id="hist-toggle">📋 Historial de sesiones</button>
+    <div class="collapse-body" id="hist-section">
+      <div id="ent-history-detail"></div>
+    </div>
+  </div>
 
   <!-- Glossary Section -->
   <div style="margin-top:8px">
@@ -934,6 +1000,8 @@ function renderEntreno(){
   renderExercises();
   renderEntProgress();
   renderHistory();
+  initProgression();
+  initHistory();
   initGlossary();
 }
 
@@ -1157,27 +1225,318 @@ document.getElementById('glossary-modal').addEventListener('click', function(e){
 });
 
 /* ===== HISTORY ===== */
-function renderHistory(){
-  const sessions = getState('sessions', []);
-  const container = document.getElementById('ent-history');
-  if (sessions.length === 0) { container.innerHTML = ''; return; }
+/* ===== COLLECT ALL LOGGED DATA ===== */
+function getAllExLogs(){
+  const logs = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    // Match both pr2_exlog_ and pr_exlog_ formats
+    const m = k.match(/^pr2?_exlog_(\d{4}-\d{2}-\d{2})_(\d+)-(\d+)$/);
+    if (!m) continue;
+    const data = getState(k.replace(PREFIX,''), null) || (() => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; }})();
+    if (!data) continue;
+    const [, date, week, day] = m;
+    const exercises = TRAINING.workouts[`${week}-${day}`];
+    if (!exercises) continue;
+    Object.entries(data).forEach(([idx, fields]) => {
+      const ex = exercises[parseInt(idx)];
+      if (!ex || !fields) return;
+      if (fields.weight != null || fields.reps != null || fields.rpe != null) {
+        logs.push({
+          date, week: parseInt(week), day: parseInt(day),
+          exIdx: parseInt(idx), exName: ex.name,
+          weight: fields.weight, reps: fields.reps, rpe: fields.rpe,
+          prescribed: { sets: ex.sets, weight: ex.weight, rpe: ex.rpe }
+        });
+      }
+    });
+  }
+  logs.sort((a, b) => a.date.localeCompare(b.date));
+  return logs;
+}
 
-  const recent = sessions.slice(-5).reverse();
-  let html = `<div class="section-header"><span class="h3">Historial reciente</span></div><div class="card">`;
-  recent.forEach(s => {
-    const block = getBlockForWeek(s.week);
-    const dayName = TRAINING.days[s.day - 1] || '?';
-    html += `<div class="history-item">
-      <div class="history-dot" style="background:var(--primary)"></div>
-      <div class="history-info">
-        <div class="history-day">${dayName.split(' ')[0]}</div>
-        <div class="history-meta">S${s.week} · Bloque ${s.block} · ${s.date}</div>
-      </div>
-      <div class="history-duration">${formatTime(s.duration)}</div>
-    </div>`;
+function getUniqueLoggedExercises(){
+  const logs = getAllExLogs();
+  const names = new Map();
+  logs.forEach(l => {
+    if (!names.has(l.exName)) names.set(l.exName, []);
+    names.get(l.exName).push(l);
   });
-  html += '</div>';
+  return names;
+}
+
+/* ===== PROGRESSION ===== */
+let progMetric = 'weight';
+
+function initProgression(){
+  const toggle = document.getElementById('prog-toggle');
+  const section = document.getElementById('prog-section');
+  toggle.addEventListener('click', () => {
+    toggle.classList.toggle('open');
+    section.classList.toggle('open');
+    if (section.classList.contains('open')) populateProgExercises();
+  });
+
+  document.getElementById('prog-exercise-select').addEventListener('change', renderProgression);
+
+  document.querySelectorAll('#prog-tabs .prog-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#prog-tabs .prog-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      progMetric = tab.dataset.metric;
+      renderProgression();
+    });
+  });
+}
+
+function populateProgExercises(){
+  const exMap = getUniqueLoggedExercises();
+  const sel = document.getElementById('prog-exercise-select');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Selecciona un ejercicio...</option>';
+  for (const [name, logs] of exMap) {
+    sel.innerHTML += `<option value="${name}">${name} (${logs.length} registros)</option>`;
+  }
+  if (current && exMap.has(current)) sel.value = current;
+}
+
+function renderProgression(){
+  const exName = document.getElementById('prog-exercise-select').value;
+  const chartContainer = document.getElementById('prog-chart-container');
+  const tableContainer = document.getElementById('prog-table-container');
+
+  if (!exName) {
+    chartContainer.innerHTML = '<div class="caption" style="text-align:center;padding:24px">Selecciona un ejercicio para ver su progresion</div>';
+    tableContainer.innerHTML = '';
+    return;
+  }
+
+  const exMap = getUniqueLoggedExercises();
+  const logs = exMap.get(exName) || [];
+  if (logs.length === 0) {
+    chartContainer.innerHTML = '<div class="caption" style="text-align:center;padding:24px">Sin datos registrados</div>';
+    tableContainer.innerHTML = '';
+    return;
+  }
+
+  const metricLabel = {weight:'Peso (kg)', reps:'Reps', rpe:'RPE'}[progMetric];
+  const values = logs.map(l => ({ date: l.date, week: l.week, val: l[progMetric] })).filter(v => v.val != null);
+
+  if (values.length === 0) {
+    chartContainer.innerHTML = `<div class="caption" style="text-align:center;padding:24px">Sin datos de ${metricLabel.toLowerCase()} para este ejercicio</div>`;
+    tableContainer.innerHTML = '';
+    return;
+  }
+
+  // SVG chart
+  const W = 360, H = 160, pad = {t:20,r:15,b:28,l:38};
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+  const vals = values.map(v => v.val);
+  const minV = Math.min(...vals);
+  const maxV = Math.max(...vals);
+  const range = maxV - minV || 1;
+  const yMin = minV - range * 0.1;
+  const yMax = maxV + range * 0.1;
+
+  const points = values.map((v, i) => ({
+    x: pad.l + (values.length === 1 ? cw / 2 : (i / (values.length - 1)) * cw),
+    y: pad.t + ch - ((v.val - yMin) / (yMax - yMin)) * ch,
+    ...v
+  }));
+
+  const polyline = points.map(p => `${p.x},${p.y}`).join(' ');
+  const areaPoints = `${points[0].x},${pad.t + ch} ` + polyline + ` ${points[points.length-1].x},${pad.t + ch}`;
+
+  // Grid lines
+  const gridCount = 4;
+  let gridHtml = '';
+  for (let i = 0; i <= gridCount; i++) {
+    const y = pad.t + (i / gridCount) * ch;
+    const val = yMax - (i / gridCount) * (yMax - yMin);
+    gridHtml += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" class="prog-grid-line"/>`;
+    gridHtml += `<text x="${pad.l - 6}" y="${y + 3}" class="prog-label" text-anchor="end">${Math.round(val * 10) / 10}</text>`;
+  }
+
+  // X labels (dates)
+  let xLabels = '';
+  const step = Math.max(1, Math.floor(points.length / 5));
+  points.forEach((p, i) => {
+    if (i % step === 0 || i === points.length - 1) {
+      const label = `S${p.week}`;
+      xLabels += `<text x="${p.x}" y="${H - 4}" class="prog-label" text-anchor="middle">${label}</text>`;
+    }
+  });
+
+  // Dots + value labels
+  let dotsHtml = '';
+  points.forEach(p => {
+    dotsHtml += `<circle cx="${p.x}" cy="${p.y}" class="prog-dot" fill="var(--primary)"/>`;
+    dotsHtml += `<text x="${p.x}" y="${p.y - 8}" class="prog-value-label">${p.val}</text>`;
+  });
+
+  // Trend arrow
+  const first = vals[0], last = vals[vals.length - 1];
+  const diff = last - first;
+  const trendIcon = diff > 0 ? '📈' : diff < 0 ? '📉' : '➡️';
+  const trendColor = diff > 0 ? 'var(--success)' : diff < 0 ? 'var(--danger)' : 'var(--text2)';
+  const trendText = diff > 0 ? `+${Math.round(diff*10)/10}` : diff < 0 ? `${Math.round(diff*10)/10}` : '=';
+
+  chartContainer.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 4px">
+      <span class="h3">${metricLabel}</span>
+      <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${trendColor}">${trendIcon} ${trendText}</span>
+    </div>
+    <div class="prog-chart">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+        ${gridHtml}
+        <polygon points="${areaPoints}" class="prog-area" fill="var(--primary)"/>
+        <polyline points="${polyline}" class="prog-line" stroke="var(--primary)"/>
+        ${dotsHtml}
+        ${xLabels}
+      </svg>
+    </div>`;
+
+  // Table
+  let tableHtml = `<table class="prog-table">
+    <tr><th>Fecha</th><th>Sem</th><th>${metricLabel}</th><th>vs Prev</th></tr>`;
+  values.forEach((v, i) => {
+    const prev = i > 0 ? values[i-1].val : null;
+    let diffClass = 'same', diffStr = '—';
+    if (prev != null) {
+      const d = v.val - prev;
+      if (d > 0) { diffClass = 'up'; diffStr = `+${Math.round(d*10)/10}`; }
+      else if (d < 0) { diffClass = 'down'; diffStr = `${Math.round(d*10)/10}`; }
+      else diffStr = '=';
+    }
+    tableHtml += `<tr>
+      <td>${v.date.slice(5)}</td>
+      <td>S${v.week}</td>
+      <td><strong>${v.val}</strong></td>
+      <td class="${diffClass}">${diffStr}</td>
+    </tr>`;
+  });
+  tableHtml += '</table>';
+  tableContainer.innerHTML = tableHtml;
+}
+
+/* ===== DETAILED HISTORY ===== */
+function initHistory(){
+  const toggle = document.getElementById('hist-toggle');
+  const section = document.getElementById('hist-section');
+  toggle.addEventListener('click', () => {
+    toggle.classList.toggle('open');
+    section.classList.toggle('open');
+    if (section.classList.contains('open')) renderDetailedHistory();
+  });
+}
+
+function renderDetailedHistory(){
+  const container = document.getElementById('ent-history-detail');
+  const sessions = getState('sessions', []);
+
+  // Also scan localStorage for days with exercise logs even without timer sessions
+  const logDates = new Map();
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    const m = k.match(/^pr2?_exlog_(\d{4}-\d{2}-\d{2})_(\d+)-(\d+)$/);
+    if (!m) continue;
+    const [, date, week, day] = m;
+    const key = `${date}_${week}-${day}`;
+    if (!logDates.has(key)) {
+      logDates.set(key, { date, week: parseInt(week), day: parseInt(day), logKey: k.replace(PREFIX, '') });
+    }
+  }
+
+  // Merge sessions and log dates
+  const allSessions = [];
+  const seen = new Set();
+
+  // Add timer-tracked sessions
+  sessions.forEach(s => {
+    const key = `${s.date}_${s.week}-${s.day}`;
+    seen.add(key);
+    allSessions.push({ ...s, hasTimer: true });
+  });
+
+  // Add log-only sessions
+  for (const [key, info] of logDates) {
+    if (!seen.has(key)) {
+      allSessions.push({
+        date: info.date, week: info.week, day: info.day,
+        block: getBlockForWeek(info.week).id, duration: 0, hasTimer: false
+      });
+    }
+  }
+
+  allSessions.sort((a, b) => b.date.localeCompare(a.date) || b.week - a.week);
+
+  if (allSessions.length === 0) {
+    container.innerHTML = '<div class="caption" style="text-align:center;padding:24px">Aun no hay sesiones registradas. Completa un entreno para verlo aqui.</div>';
+    return;
+  }
+
+  let html = `<div class="caption" style="margin-bottom:10px">${allSessions.length} sesiones registradas</div>`;
+
+  allSessions.slice(0, 20).forEach((s, si) => {
+    const dayName = TRAINING.days[s.day - 1] || '?';
+    const wKey = `${s.week}-${s.day}`;
+    const exercises = TRAINING.workouts[wKey] || [];
+    const logKey = `exlog_${s.date}_${wKey}`;
+    const log = getState(logKey, {});
+    const doneKey = `exdone_${s.date}_${wKey}`;
+    const done = getState(doneKey, {});
+    const completedCount = Object.values(done).filter(Boolean).length;
+    const hasLogData = Object.keys(log).length > 0;
+
+    html += `<div class="card" style="padding:12px 14px;margin-bottom:8px">
+      <div class="hist-detail-header" data-target="hist-ex-${si}">
+        <div>
+          <div style="font-size:14px;font-weight:700">${dayName.split(' ')[0]}</div>
+          <div class="caption">S${s.week} · Bloque ${s.block} · ${s.date}</div>
+        </div>
+        <div style="text-align:right">
+          ${s.hasTimer && s.duration > 0 ? `<div class="mono" style="font-size:14px;font-weight:700">${formatTime(s.duration)}</div>` : ''}
+          <div class="caption">${completedCount}/${exercises.length} ejercicios</div>
+        </div>
+      </div>`;
+
+    if (hasLogData && exercises.length > 0) {
+      html += `<div class="hist-detail-exercises" id="hist-ex-${si}">
+        <div class="hist-ex-row" style="font-weight:700;color:var(--text2);border-bottom:2px solid var(--border)">
+          <div>Ejercicio</div><div>Peso</div><div>Reps</div><div>RPE</div>
+        </div>`;
+      exercises.forEach((ex, ei) => {
+        const l = log[ei] || {};
+        const isDone = done[ei];
+        if (l.weight != null || l.reps != null || l.rpe != null || isDone) {
+          html += `<div class="hist-ex-row">
+            <div class="hist-ex-name" style="${isDone ? 'text-decoration:line-through;opacity:.6' : ''}">${ex.name}</div>
+            <div class="hist-ex-val">${l.weight != null ? l.weight + 'kg' : '—'}</div>
+            <div class="hist-ex-val">${l.reps != null ? l.reps : '—'}</div>
+            <div class="hist-ex-val">${l.rpe != null ? l.rpe : '—'}</div>
+          </div>`;
+        }
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+  });
+
   container.innerHTML = html;
+
+  // Toggle detail expand
+  container.querySelectorAll('.hist-detail-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const target = document.getElementById(h.dataset.target);
+      if (target) target.classList.toggle('open');
+    });
+  });
+}
+
+function renderHistory(){
+  // Kept for compatibility — now uses collapsible sections
 }
 
 /* ===== GLOSSARY BROWSER ===== */
