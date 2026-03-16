@@ -1,4 +1,4 @@
-const CACHE = 'planrafa-v2';
+const CACHE = 'planrafa-v3';
 const ASSETS = ['./', './index.html', './training_data.js', './manifest.json'];
 
 self.addEventListener('install', e => {

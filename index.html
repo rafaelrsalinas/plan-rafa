@@ -160,24 +160,28 @@ nav button.active svg{transform:scale(1.1)}
 .progress-ring .fill{stroke:var(--success)}
 .progress-ring .center{position:absolute;font-size:13px;font-weight:700}
 
-/* ===== CHRONO / TIMER ===== */
-.timer-bar{background:var(--card);border-radius:var(--radius);padding:14px 16px;
-  margin-bottom:12px;display:flex;align-items:center;gap:12px;
-  border:1px solid var(--border);position:relative;overflow:hidden}
-.timer-bar.running{border-color:var(--success);animation:none}
-.timer-bar.running::before{content:'';position:absolute;inset:0;
-  background:var(--success-soft);animation:pulse 2s ease infinite;pointer-events:none}
-.timer-display{font-family:var(--mono);font-size:28px;font-weight:700;
-  font-variant-numeric:tabular-nums;letter-spacing:1px;min-width:110px}
-.timer-label{font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.timer-controls{display:flex;gap:8px;margin-left:auto}
-.timer-btn{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+/* ===== FLOATING TIMER BAR ===== */
+.float-timer{position:fixed;bottom:calc(var(--nav-h) + var(--safe-b));left:0;right:0;z-index:90;
+  background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--glass-border);padding:8px 16px;
+  display:none;align-items:center;gap:10px;transition:all .3s var(--ease)}
+.float-timer.visible{display:flex}
+.float-timer.running{border-top-color:var(--success)}
+.float-timer.running::before{content:'';position:absolute;inset:0;
+  background:var(--success-soft);opacity:.3;animation:pulse 2s ease infinite;pointer-events:none}
+.float-timer .ft-display{font-family:var(--mono);font-size:22px;font-weight:700;
+  font-variant-numeric:tabular-nums;letter-spacing:.5px;min-width:80px;position:relative;z-index:1}
+.float-timer .ft-label{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;
+  letter-spacing:.3px;position:relative;z-index:1}
+.float-timer .ft-controls{display:flex;gap:6px;margin-left:auto;position:relative;z-index:1}
+.ft-btn{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:all .2s var(--ease);
   -webkit-tap-highlight-color:transparent}
-.timer-btn.start{background:var(--success);color:#fff}
-.timer-btn.pause{background:var(--warning);color:#fff}
-.timer-btn.stop{background:var(--danger-soft);color:var(--danger)}
-.timer-btn:active{transform:scale(.9)}
+.ft-btn.start{background:var(--success);color:#fff}
+.ft-btn.pause{background:var(--warning);color:#fff}
+.ft-btn.stop{background:var(--danger-soft);color:var(--danger)}
+.ft-btn:active{transform:scale(.9)}
+body.timer-active{padding-bottom:calc(var(--nav-h) + var(--safe-b) + 56px)}
 
 /* ===== REST TIMER ===== */
 .rest-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);
@@ -210,22 +214,49 @@ nav button.active svg{transform:scale(1.1)}
   display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .ex-prescribed span{background:var(--bg);padding:2px 8px;border-radius:6px;font-weight:500}
 
-.ex-log-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
-.ex-log-field{display:flex;flex-direction:column;gap:3px}
-.ex-log-field label{font-size:10px;font-weight:700;color:var(--text3);
-  text-transform:uppercase;letter-spacing:.5px}
-.ex-log-field input{width:100%;padding:8px;border-radius:var(--radius-xs);
+/* ===== SET TABLE (Strong/Hevy style) ===== */
+.set-table{width:100%;margin:8px 0 4px}
+.set-header{display:grid;grid-template-columns:32px 1fr 1fr 1fr 36px;gap:4px;
+  padding:4px 0;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.3px;text-align:center}
+.set-row{display:grid;grid-template-columns:32px 1fr 1fr 1fr 36px;gap:4px;
+  padding:3px 0;align-items:center}
+.set-num{font-size:12px;font-weight:700;color:var(--text2);text-align:center;
+  width:28px;height:28px;border-radius:50%;background:var(--bg);
+  display:flex;align-items:center;justify-content:center}
+.set-row.done .set-num{background:var(--success);color:#fff}
+.set-input{width:100%;padding:7px 4px;border-radius:var(--radius-xs);
   border:1.5px solid var(--border2);background:var(--bg);color:var(--text);
-  font-family:var(--mono);font-size:15px;text-align:center;outline:none;
+  font-family:var(--mono);font-size:14px;text-align:center;outline:none;
   transition:all .2s var(--ease);-webkit-appearance:none}
-.ex-log-field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
-.ex-log-field input::placeholder{color:var(--text3)}
+.set-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-soft)}
+.set-input::placeholder{color:var(--text3);font-size:12px}
+.set-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);
+  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;color:transparent;
+  justify-self:center}
+.set-check.checked{background:var(--success);border-color:var(--success);color:#fff}
+.set-check svg{width:14px;height:14px}
+.set-actions{display:flex;gap:6px;margin-top:4px}
+.set-add-btn,.set-rm-btn{font-size:11px;font-weight:600;border:none;cursor:pointer;
+  padding:5px 10px;border-radius:6px;transition:all .15s var(--ease);
+  -webkit-tap-highlight-color:transparent}
+.set-add-btn{background:var(--primary-soft);color:var(--primary)}
+.set-rm-btn{background:var(--danger-soft);color:var(--danger)}
+.set-add-btn:active,.set-rm-btn:active{transform:scale(.95)}
 
-.ex-notes{font-size:12px;color:var(--text2);margin-top:6px;padding:6px 8px;
+.ex-notes-box{font-size:12px;color:var(--text2);margin-top:6px;padding:6px 8px;
   background:var(--bg);border-radius:var(--radius-xs);line-height:1.4}
+.ex-obs{margin-top:8px}
+.ex-obs textarea{width:100%;padding:8px 10px;border-radius:var(--radius-xs);
+  border:1.5px solid var(--border2);background:var(--bg);color:var(--text);
+  font-family:var(--font);font-size:13px;line-height:1.4;resize:vertical;
+  min-height:36px;max-height:120px;outline:none;transition:border .2s var(--ease)}
+.ex-obs textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-soft)}
+.ex-obs textarea::placeholder{color:var(--text3)}
 
 .ex-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;
-  padding-top:10px;border-top:1px solid var(--border)}
+  padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;gap:6px}
 .ex-rest-btn{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;
   color:var(--primary);cursor:pointer;background:var(--primary-soft);border:none;
   padding:5px 10px;border-radius:6px;transition:all .2s var(--ease)}
@@ -492,24 +523,10 @@ nav button.active svg{transform:scale(1.1)}
   <div class="h1" style="margin-bottom:4px">Entreno</div>
   <div class="caption" id="ent-subtitle" style="margin-bottom:12px"></div>
 
-  <!-- Timer -->
-  <div class="timer-bar" id="ent-timer">
-    <div>
-      <div class="timer-label">Duracion sesion</div>
-      <div class="timer-display" id="timer-display">00:00</div>
-    </div>
-    <div class="timer-controls">
-      <button class="timer-btn start" id="timer-start" title="Iniciar">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-      <button class="timer-btn pause" id="timer-pause" title="Pausar" style="display:none">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-      </button>
-      <button class="timer-btn stop" id="timer-stop" title="Parar" style="display:none">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-      </button>
-    </div>
-  </div>
+  <!-- Start workout button (shown when timer not running) -->
+  <button class="btn btn-success btn-full" id="ent-start-workout" style="margin-bottom:12px;font-size:15px;padding:14px">
+    ▶️ Iniciar entreno
+  </button>
 
   <!-- Progress -->
   <div id="ent-progress" style="margin-bottom:12px"></div>
@@ -578,6 +595,25 @@ nav button.active svg{transform:scale(1.1)}
 <div class="view" id="v-config">
   <div class="h1" style="margin-bottom:14px">Ajustes</div>
   <div class="card" id="cfg-content"></div>
+</div>
+
+<!-- FLOATING WORKOUT TIMER -->
+<div class="float-timer" id="float-timer">
+  <div>
+    <div class="ft-label">Entreno</div>
+    <div class="ft-display" id="ft-display">00:00</div>
+  </div>
+  <div class="ft-controls">
+    <button class="ft-btn pause" id="ft-pause" title="Pausar">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+    </button>
+    <button class="ft-btn start" id="ft-resume" title="Reanudar" style="display:none">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button class="ft-btn stop" id="ft-stop" title="Finalizar">
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -685,9 +721,8 @@ navBtns.forEach(btn => {
   });
 });
 
-/* ===== TIMER STATE ===== */
-const timerState = { running: false, startTime: null, elapsed: 0, interval: null, paused: false };
-
+/* ===== PERSISTENT TIMER STATE ===== */
+/*  Saves startTime + elapsed to localStorage so backgrounding the app won't lose the timer */
 function formatTime(ms){
   const totalSec = Math.floor(ms / 1000);
   const h = Math.floor(totalSec / 3600);
@@ -697,82 +732,123 @@ function formatTime(ms){
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-function updateTimerDisplay(){
-  const display = document.getElementById('timer-display');
-  if (!display) return;
-  let total = timerState.elapsed;
-  if (timerState.running && timerState.startTime) total += Date.now() - timerState.startTime;
-  display.textContent = formatTime(total);
+function loadTimerState(){
+  return getState('activeTimer', null);
+}
+function saveTimerState(ts){
+  if (ts) setState('activeTimer', ts); else localStorage.removeItem(PREFIX+'activeTimer');
 }
 
-function startTimer(){
-  if (timerState.running) return;
-  timerState.running = true;
-  timerState.paused = false;
-  timerState.startTime = Date.now();
-  timerState.interval = setInterval(updateTimerDisplay, 1000);
-  updateTimerUI();
+function getTimerElapsed(){
+  const ts = loadTimerState();
+  if (!ts) return 0;
+  let total = ts.elapsed || 0;
+  if (ts.running && ts.startTime) total += Date.now() - ts.startTime;
+  return total;
+}
+
+function isTimerActive(){
+  const ts = loadTimerState();
+  return ts && (ts.running || ts.paused);
+}
+
+let _timerInterval = null;
+
+function updateFloatTimer(){
+  const bar = document.getElementById('float-timer');
+  const display = document.getElementById('ft-display');
+  const ts = loadTimerState();
+
+  if (!ts || (!ts.running && !ts.paused)) {
+    bar.classList.remove('visible','running');
+    document.body.classList.remove('timer-active');
+    const startBtn = document.getElementById('ent-start-workout');
+    if (startBtn) startBtn.style.display = '';
+    return;
+  }
+
+  bar.classList.add('visible');
+  document.body.classList.add('timer-active');
+  bar.classList.toggle('running', !!ts.running);
+
+  const startBtn = document.getElementById('ent-start-workout');
+  if (startBtn) startBtn.style.display = 'none';
+
+  document.getElementById('ft-pause').style.display = ts.running ? 'flex' : 'none';
+  document.getElementById('ft-resume').style.display = ts.paused ? 'flex' : 'none';
+
+  display.textContent = formatTime(getTimerElapsed());
+}
+
+function startWorkoutTimer(){
+  const ts = { running: true, paused: false, startTime: Date.now(), elapsed: 0,
+    week: entState.week, day: entState.day, block: entState.block, date: todayKey() };
+  saveTimerState(ts);
+  clearInterval(_timerInterval);
+  _timerInterval = setInterval(updateFloatTimer, 1000);
+  updateFloatTimer();
   showToast('Entreno iniciado', '🏋️');
 }
 
-function pauseTimer(){
-  if (!timerState.running) return;
-  timerState.elapsed += Date.now() - timerState.startTime;
-  timerState.startTime = null;
-  timerState.running = false;
-  timerState.paused = true;
-  clearInterval(timerState.interval);
-  updateTimerUI();
+function pauseWorkoutTimer(){
+  const ts = loadTimerState();
+  if (!ts || !ts.running) return;
+  ts.elapsed += Date.now() - ts.startTime;
+  ts.startTime = null;
+  ts.running = false;
+  ts.paused = true;
+  saveTimerState(ts);
+  updateFloatTimer();
 }
 
-function stopTimer(){
-  const total = timerState.elapsed + (timerState.running && timerState.startTime ? Date.now() - timerState.startTime : 0);
-  clearInterval(timerState.interval);
-  timerState.running = false;
-  timerState.paused = false;
-  timerState.startTime = null;
+function resumeWorkoutTimer(){
+  const ts = loadTimerState();
+  if (!ts || !ts.paused) return;
+  ts.running = true;
+  ts.paused = false;
+  ts.startTime = Date.now();
+  saveTimerState(ts);
+  clearInterval(_timerInterval);
+  _timerInterval = setInterval(updateFloatTimer, 1000);
+  updateFloatTimer();
+}
+
+function stopWorkoutTimer(){
+  const ts = loadTimerState();
+  if (!ts) return;
+  const total = getTimerElapsed();
+  clearInterval(_timerInterval);
 
   if (total > 60000) {
-    const week = entState.week;
-    const day = entState.day;
-    const key = todayKey();
     const sessions = getState('sessions', []);
-    sessions.push({ date: key, week, day, duration: total, block: entState.block });
+    sessions.push({ date: ts.date || todayKey(), week: ts.week, day: ts.day, duration: total, block: ts.block });
     setState('sessions', sessions);
-    // Save timer for today
-    setState('timer_' + key + '_' + week + '-' + day, total);
     showToast(`Sesion guardada: ${formatTime(total)}`, '✅');
-  }
-
-  timerState.elapsed = 0;
-  updateTimerDisplay();
-  updateTimerUI();
-}
-
-function updateTimerUI(){
-  const bar = document.getElementById('ent-timer');
-  const startBtn = document.getElementById('timer-start');
-  const pauseBtn = document.getElementById('timer-pause');
-  const stopBtn = document.getElementById('timer-stop');
-  if (!bar) return;
-
-  if (timerState.running) {
-    bar.classList.add('running');
-    startBtn.style.display = 'none';
-    pauseBtn.style.display = 'flex';
-    stopBtn.style.display = 'flex';
-  } else if (timerState.paused) {
-    bar.classList.remove('running');
-    startBtn.style.display = 'flex';
-    pauseBtn.style.display = 'none';
-    stopBtn.style.display = 'flex';
   } else {
-    bar.classList.remove('running');
-    startBtn.style.display = 'flex';
-    pauseBtn.style.display = 'none';
-    stopBtn.style.display = 'none';
+    showToast('Entreno descartado (< 1 min)', '⏹');
+  }
+
+  saveTimerState(null);
+  updateFloatTimer();
+}
+
+// Restore timer on page load
+function restoreTimer(){
+  const ts = loadTimerState();
+  if (ts && (ts.running || ts.paused)) {
+    if (ts.running) {
+      _timerInterval = setInterval(updateFloatTimer, 1000);
+    }
+    updateFloatTimer();
   }
 }
+
+// Float timer events
+document.getElementById('ft-pause').addEventListener('click', pauseWorkoutTimer);
+document.getElementById('ft-resume').addEventListener('click', resumeWorkoutTimer);
+document.getElementById('ft-stop').addEventListener('click', () => {
+  if (confirm('¿Finalizar entreno?')) stopWorkoutTimer();
+});
 
 /* ===== REST TIMER ===== */
 let restInterval = null;
@@ -886,11 +962,14 @@ function renderHoy(){
     const key = `${week}-${td}`;
     const exercises = TRAINING.workouts[key];
     if (exercises) {
-      const doneKey = 'exdone_' + todayKey() + '_' + key;
-      const done = getState(doneKey, {});
-      const total = exercises.length;
-      const completed = Object.values(done).filter(Boolean).length;
-      const pct = total > 0 ? (completed / total) * 100 : 0;
+      const logKey = 'exlog_' + todayKey() + '_' + key;
+      let totalSets = 0, doneSets = 0;
+      exercises.forEach((ex, i) => {
+        const entry = getExLog(logKey, i);
+        totalSets += entry.sets.length || parseSetsFromPrescribed(ex.sets);
+        doneSets += entry.sets.filter(s => s.done).length;
+      });
+      const pct = totalSets > 0 ? (doneSets / totalSets) * 100 : 0;
       document.getElementById('hoy-ring').innerHTML = makeRing(pct, 56, 5);
     } else {
       document.getElementById('hoy-ring').innerHTML = '';
@@ -969,13 +1048,14 @@ function renderEntreno(){
   document.getElementById('ent-subtitle').textContent =
     `Bloque ${block.id}: ${block.name} — Semana ${entState.week}`;
 
-  updateTimerDisplay();
-  updateTimerUI();
+  updateFloatTimer();
 
-  // Timer events
-  document.getElementById('timer-start').onclick = startTimer;
-  document.getElementById('timer-pause').onclick = pauseTimer;
-  document.getElementById('timer-stop').onclick = stopTimer;
+  // Start workout button
+  const startBtn = document.getElementById('ent-start-workout');
+  if (startBtn) {
+    startBtn.onclick = startWorkoutTimer;
+    if (isTimerActive()) startBtn.style.display = 'none';
+  }
 
   // Blocks
   let bhtml = '';
@@ -1045,35 +1125,61 @@ function renderEntProgress(){
   const exercises = TRAINING.workouts[key];
   if (!exercises) { document.getElementById('ent-progress').innerHTML = ''; return; }
 
-  const doneKey = 'exdone_' + todayKey() + '_' + key;
-  const done = getState(doneKey, {});
-  const total = exercises.length;
-  const completed = Object.values(done).filter(Boolean).length;
-  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const logKey = 'exlog_' + todayKey() + '_' + key;
+  let totalSets = 0, doneSets = 0;
+  exercises.forEach((ex, i) => {
+    const entry = getExLog(logKey, i);
+    totalSets += entry.sets.length || parseSetsFromPrescribed(ex.sets);
+    doneSets += entry.sets.filter(s => s.done).length;
+  });
+  const pct = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
 
   document.getElementById('ent-progress').innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;padding:4px 0">
       <div style="flex:1;height:6px;border-radius:3px;background:var(--bg2);overflow:hidden">
         <div style="height:100%;width:${pct}%;border-radius:3px;background:var(--success);transition:width .4s var(--ease)"></div>
       </div>
-      <span class="caption mono">${completed}/${total}</span>
+      <span class="caption mono">${doneSets}/${totalSets} series</span>
     </div>`;
 }
 
-/* ===== EXERCISE LOG DEBOUNCE ===== */
-let _exLogDebounce = null;
-function saveExLog(logKey, idx, field, value){
-  clearTimeout(_exLogDebounce);
-  _exLogDebounce = setTimeout(() => {
-    const log = getState(logKey, {});
-    if (!log[idx]) log[idx] = {};
-    if (value === '' || value === null) {
-      delete log[idx][field];
-    } else {
-      log[idx][field] = isNaN(Number(value)) ? value : Number(value);
+/* ===== SET-BASED EXERCISE LOG ===== */
+/*  Data format in localStorage: exlog_{date}_{week}-{day} = {
+      "0": { sets: [ {weight:30,reps:10,rpe:8,done:true}, ... ], obs: "felt good" },
+      "1": { sets: [ ... ], obs: "" }
     }
+    For backward compat, old flat format {weight,reps,rpe} is auto-migrated to sets[0].
+*/
+
+function getExLog(logKey, exIdx){
+  const log = getState(logKey, {});
+  let entry = log[exIdx];
+  // Migrate old flat format → sets array
+  if (entry && !entry.sets) {
+    entry = { sets: [{ weight: entry.weight, reps: entry.reps, rpe: entry.rpe, done: false }], obs: '' };
+    log[exIdx] = entry;
     setState(logKey, log);
-  }, 300);
+  }
+  return entry || { sets: [], obs: '' };
+}
+
+function saveExEntry(logKey, exIdx, entry){
+  const log = getState(logKey, {});
+  log[exIdx] = entry;
+  setState(logKey, log);
+}
+
+let _exSaveDebounce = {};
+function debounceSaveExEntry(logKey, exIdx, entry){
+  const k = logKey + '_' + exIdx;
+  clearTimeout(_exSaveDebounce[k]);
+  _exSaveDebounce[k] = setTimeout(() => saveExEntry(logKey, exIdx, entry), 250);
+}
+
+function parseSetsFromPrescribed(setsStr){
+  if (!setsStr || setsStr === '--') return 3;
+  const m = setsStr.match(/(\d+)\s*[xX×]/);
+  return m ? parseInt(m[1]) : 3;
 }
 
 /* ===== RENDER EXERCISES ===== */
@@ -1086,29 +1192,27 @@ function renderExercises(){
     return;
   }
 
-  const doneKey = 'exdone_' + todayKey() + '_' + key;
-  const done = getState(doneKey, {});
   const logKey = 'exlog_' + todayKey() + '_' + key;
-  const log = getState(logKey, {});
 
   let html = '';
   exercises.forEach((ex, i) => {
     const warn = isHerniaProhibited(ex.name);
     const safe = isHerniaSafe(ex.name);
-    const isDone = done[i];
-    const l = log[i] || {};
+    const entry = getExLog(logKey, i);
+    const prescribedSets = parseSetsFromPrescribed(ex.sets);
+    // Ensure at least prescribed number of set rows
+    while (entry.sets.length < prescribedSets) {
+      entry.sets.push({ weight: null, reps: null, rpe: null, done: false });
+    }
+    // Save if we added rows
+    saveExEntry(logKey, i, entry);
 
-    const weightVal = l.weight != null ? l.weight : '';
-    const repsVal = l.reps != null ? l.reps : '';
-    const rpeVal = l.rpe != null ? l.rpe : '';
-
-    const weightPh = ex.weight && ex.weight !== '--' ? ex.weight : 'kg';
-    const rpePh = ex.rpe && ex.rpe !== '--' ? ex.rpe : 'RPE';
-    const repsPh = ex.sets || 'reps';
-
+    const allDone = entry.sets.length > 0 && entry.sets.every(s => s.done);
     const restSec = parseRestSeconds(ex.rest);
+    const weightPh = ex.weight && ex.weight !== '--' ? ex.weight : '';
+    const rpePh = ex.rpe && ex.rpe !== '--' ? ex.rpe : '';
 
-    html += `<div class="ex-card ${isDone ? 'completed' : ''} ${warn ? 'hernia-warn' : safe ? 'hernia-safe' : ''}">
+    html += `<div class="ex-card ${allDone ? 'completed' : ''} ${warn ? 'hernia-warn' : safe ? 'hernia-safe' : ''}" data-exidx="${i}">
       <div class="ex-name" data-glossary="${ex.name}">${ex.name}
         ${safe ? '<span class="ex-badge safe">SAFE</span>' : ''}
         ${warn ? '<span class="ex-badge warn">CUIDADO</span>' : ''}
@@ -1122,60 +1226,143 @@ function renderExercises(){
         ${ex.tempo && ex.tempo !== '--' ? `<span>${ex.tempo}</span>` : ''}
       </div>
 
-      <div class="ex-log-grid">
-        <div class="ex-log-field">
-          <label>Peso (kg)</label>
-          <input type="number" step="0.5" inputmode="decimal"
-            data-logkey="${logKey}" data-idx="${i}" data-field="weight"
-            value="${weightVal}" placeholder="${weightPh}">
+      <div class="set-table" data-logkey="${logKey}" data-exidx="${i}">
+        <div class="set-header">
+          <div>SET</div><div>KG</div><div>REPS</div><div>RPE</div><div>✓</div>
         </div>
-        <div class="ex-log-field">
-          <label>Reps</label>
-          <input type="number" step="1" inputmode="numeric"
-            data-logkey="${logKey}" data-idx="${i}" data-field="reps"
-            value="${repsVal}" placeholder="${repsPh}">
-        </div>
-        <div class="ex-log-field">
-          <label>RPE</label>
-          <input type="number" step="0.5" min="1" max="10" inputmode="decimal"
-            data-logkey="${logKey}" data-idx="${i}" data-field="rpe"
-            value="${rpeVal}" placeholder="${rpePh}">
+        ${entry.sets.map((s, si) => `
+          <div class="set-row ${s.done ? 'done' : ''}" data-setidx="${si}">
+            <div class="set-num">${si + 1}</div>
+            <input class="set-input" type="number" step="0.5" inputmode="decimal"
+              data-field="weight" value="${s.weight != null ? s.weight : ''}" placeholder="${weightPh}">
+            <input class="set-input" type="number" step="1" inputmode="numeric"
+              data-field="reps" value="${s.reps != null ? s.reps : ''}" placeholder="">
+            <input class="set-input" type="number" step="0.5" min="1" max="10" inputmode="decimal"
+              data-field="rpe" value="${s.rpe != null ? s.rpe : ''}" placeholder="${rpePh}">
+            <button class="set-check ${s.done ? 'checked' : ''}" data-setidx="${si}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+        `).join('')}
+        <div class="set-actions">
+          <button class="set-add-btn" data-logkey="${logKey}" data-exidx="${i}">+ Serie</button>
+          ${entry.sets.length > 1 ? `<button class="set-rm-btn" data-logkey="${logKey}" data-exidx="${i}">− Serie</button>` : ''}
         </div>
       </div>
 
-      ${ex.notes ? `<div class="ex-notes">📝 ${ex.notes}</div>` : ''}
-      ${warn ? '<div class="ex-notes" style="color:var(--danger)">⚠️ Posible riesgo hernia — revisar alternativas</div>' : ''}
+      ${ex.notes ? `<div class="ex-notes-box">📝 ${ex.notes}</div>` : ''}
+      ${warn ? '<div class="ex-notes-box" style="color:var(--danger)">⚠️ Posible riesgo hernia — revisar alternativas</div>' : ''}
+
+      <div class="ex-obs">
+        <textarea placeholder="Observaciones..." data-logkey="${logKey}" data-exidx="${i}">${entry.obs || ''}</textarea>
+      </div>
 
       <div class="ex-footer">
-        <label class="chk"><input type="checkbox" data-donekey="${doneKey}" data-idx="${i}" ${isDone ? 'checked' : ''}><span></span>
-          <span style="font-size:12px;color:var(--text2);margin-left:6px">Hecho</span>
-        </label>
-        ${ex.rest && ex.rest !== '--' ? `<button class="ex-rest-btn" data-rest="${restSec}" data-name="${ex.name}">⏱ ${ex.rest}</button>` : ''}
+        ${ex.rest && ex.rest !== '--' ? `<button class="ex-rest-btn" data-rest="${restSec}" data-name="${ex.name}">⏱ ${ex.rest}</button>` : '<div></div>'}
+        <div class="caption">${entry.sets.filter(s=>s.done).length}/${entry.sets.length} series</div>
       </div>
     </div>`;
   });
 
   container.innerHTML = html;
+  attachExerciseEvents(container, logKey, exercises);
+}
 
-  // Event listeners
+function attachExerciseEvents(container, logKey, exercises){
+  // Glossary tap
   container.querySelectorAll('.ex-name').forEach(el => {
     el.addEventListener('click', () => showGlossary(el.dataset.glossary));
   });
-  container.querySelectorAll('.ex-log-grid input').forEach(inp => {
+
+  // Set input changes
+  container.querySelectorAll('.set-input').forEach(inp => {
     inp.addEventListener('input', () => {
-      saveExLog(inp.dataset.logkey, inp.dataset.idx, inp.dataset.field, inp.value);
+      const row = inp.closest('.set-row');
+      const table = inp.closest('.set-table');
+      const exIdx = parseInt(table.dataset.exidx);
+      const setIdx = parseInt(row.dataset.setidx);
+      const field = inp.dataset.field;
+      const val = inp.value === '' ? null : Number(inp.value);
+      const entry = getExLog(logKey, exIdx);
+      if (!entry.sets[setIdx]) entry.sets[setIdx] = {};
+      entry.sets[setIdx][field] = val;
+      debounceSaveExEntry(logKey, exIdx, entry);
     });
   });
-  container.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    cb.addEventListener('change', () => {
-      const s = getState(cb.dataset.donekey, {});
-      s[cb.dataset.idx] = cb.checked;
-      setState(cb.dataset.donekey, s);
-      cb.closest('.ex-card').classList.toggle('completed', cb.checked);
+
+  // Set check buttons
+  container.querySelectorAll('.set-check').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.set-row');
+      const table = btn.closest('.set-table');
+      const exIdx = parseInt(table.dataset.exidx);
+      const setIdx = parseInt(row.dataset.setidx);
+      const entry = getExLog(logKey, exIdx);
+      if (!entry.sets[setIdx]) entry.sets[setIdx] = {};
+      entry.sets[setIdx].done = !entry.sets[setIdx].done;
+      saveExEntry(logKey, exIdx, entry);
+
+      btn.classList.toggle('checked', entry.sets[setIdx].done);
+      row.classList.toggle('done', entry.sets[setIdx].done);
+
+      // Update card completed state
+      const card = btn.closest('.ex-card');
+      const allDone = entry.sets.length > 0 && entry.sets.every(s => s.done);
+      card.classList.toggle('completed', allDone);
+
+      // Update series counter
+      const footer = card.querySelector('.ex-footer .caption');
+      if (footer) footer.textContent = `${entry.sets.filter(s=>s.done).length}/${entry.sets.length} series`;
+
       renderEntProgress();
-      if (cb.checked) showToast('Ejercicio completado', '💪');
+
+      if (entry.sets[setIdx].done) {
+        showToast(`Serie ${setIdx+1} completada`, '💪');
+        // Auto-launch rest timer
+        const restBtn = card.querySelector('.ex-rest-btn');
+        if (restBtn && !allDone) {
+          const restSec = parseInt(restBtn.dataset.rest);
+          startRestTimer(restSec, restBtn.dataset.name);
+        }
+      }
     });
   });
+
+  // Add set
+  container.querySelectorAll('.set-add-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const exIdx = parseInt(btn.dataset.exidx);
+      const entry = getExLog(logKey, exIdx);
+      entry.sets.push({ weight: null, reps: null, rpe: null, done: false });
+      saveExEntry(logKey, exIdx, entry);
+      renderExercises();
+    });
+  });
+
+  // Remove set
+  container.querySelectorAll('.set-rm-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const exIdx = parseInt(btn.dataset.exidx);
+      const entry = getExLog(logKey, exIdx);
+      if (entry.sets.length > 1) {
+        entry.sets.pop();
+        saveExEntry(logKey, exIdx, entry);
+        renderExercises();
+      }
+    });
+  });
+
+  // Observations textarea
+  container.querySelectorAll('.ex-obs textarea').forEach(ta => {
+    ta.addEventListener('input', () => {
+      const exIdx = parseInt(ta.dataset.exidx);
+      const entry = getExLog(logKey, exIdx);
+      entry.obs = ta.value;
+      debounceSaveExEntry(logKey, exIdx, entry);
+    });
+  });
+
+  // Rest timer buttons
   container.querySelectorAll('.ex-rest-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       startRestTimer(parseInt(btn.dataset.rest), btn.dataset.name);
@@ -1230,10 +1417,9 @@ function getAllExLogs(){
   const logs = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    // Match both pr2_exlog_ and pr_exlog_ formats
     const m = k.match(/^pr2?_exlog_(\d{4}-\d{2}-\d{2})_(\d+)-(\d+)$/);
     if (!m) continue;
-    const data = getState(k.replace(PREFIX,''), null) || (() => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; }})();
+    const data = (() => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; }})();
     if (!data) continue;
     const [, date, week, day] = m;
     const exercises = TRAINING.workouts[`${week}-${day}`];
@@ -1241,7 +1427,27 @@ function getAllExLogs(){
     Object.entries(data).forEach(([idx, fields]) => {
       const ex = exercises[parseInt(idx)];
       if (!ex || !fields) return;
-      if (fields.weight != null || fields.reps != null || fields.rpe != null) {
+
+      // New multi-set format
+      if (fields.sets && Array.isArray(fields.sets)) {
+        // Aggregate: use best weight, total reps, avg RPE from completed sets
+        const doneSets = fields.sets.filter(s => s.done || s.weight != null || s.reps != null);
+        if (doneSets.length === 0) return;
+        const bestWeight = Math.max(...doneSets.map(s => s.weight || 0));
+        const totalReps = doneSets.reduce((a, s) => a + (s.reps || 0), 0);
+        const avgReps = Math.round(totalReps / doneSets.length);
+        const rpes = doneSets.filter(s => s.rpe != null).map(s => s.rpe);
+        const avgRpe = rpes.length > 0 ? Math.round(rpes.reduce((a,r)=>a+r,0)/rpes.length * 10)/10 : null;
+        logs.push({
+          date, week: parseInt(week), day: parseInt(day),
+          exIdx: parseInt(idx), exName: ex.name,
+          weight: bestWeight || null, reps: avgReps || null, rpe: avgRpe,
+          setsDetail: fields.sets, obs: fields.obs || '',
+          prescribed: { sets: ex.sets, weight: ex.weight, rpe: ex.rpe }
+        });
+      }
+      // Old flat format backward compat
+      else if (fields.weight != null || fields.reps != null || fields.rpe != null) {
         logs.push({
           date, week: parseInt(week), day: parseInt(day),
           exIdx: parseInt(idx), exName: ex.name,
@@ -1484,10 +1690,20 @@ function renderDetailedHistory(){
     const exercises = TRAINING.workouts[wKey] || [];
     const logKey = `exlog_${s.date}_${wKey}`;
     const log = getState(logKey, {});
-    const doneKey = `exdone_${s.date}_${wKey}`;
-    const done = getState(doneKey, {});
-    const completedCount = Object.values(done).filter(Boolean).length;
+    // Count completed exercises (new format: all sets done; old format: exdone)
+    let completedCount = 0;
     const hasLogData = Object.keys(log).length > 0;
+    Object.values(log).forEach(entry => {
+      if (entry && entry.sets && Array.isArray(entry.sets)) {
+        if (entry.sets.length > 0 && entry.sets.every(s => s.done)) completedCount++;
+      }
+    });
+    // Fallback to old format
+    if (completedCount === 0) {
+      const doneKey = `exdone_${s.date}_${wKey}`;
+      const done = getState(doneKey, {});
+      completedCount = Object.values(done).filter(Boolean).length;
+    }
 
     html += `<div class="card" style="padding:12px 14px;margin-bottom:8px">
       <div class="hist-detail-header" data-target="hist-ex-${si}">
@@ -1508,10 +1724,30 @@ function renderDetailedHistory(){
         </div>`;
       exercises.forEach((ex, ei) => {
         const l = log[ei] || {};
-        const isDone = done[ei];
-        if (l.weight != null || l.reps != null || l.rpe != null || isDone) {
+        // New multi-set format
+        if (l.sets && Array.isArray(l.sets)) {
+          const doneSets = l.sets.filter(s => s.done || s.weight != null || s.reps != null);
+          if (doneSets.length === 0) return;
+          // Show exercise name as header
+          html += `<div class="hist-ex-row" style="border-bottom:none;padding-bottom:0">
+            <div class="hist-ex-name" style="grid-column:1/-1;font-size:13px">${ex.name}</div>
+          </div>`;
+          doneSets.forEach((s, si) => {
+            html += `<div class="hist-ex-row" style="padding-left:28px;font-size:11px;color:var(--text2)">
+              <div style="font-size:10px">S${si+1}</div>
+              <div class="hist-ex-val">${s.weight != null ? s.weight+'kg' : '—'}</div>
+              <div class="hist-ex-val">${s.reps != null ? s.reps : '—'}</div>
+              <div class="hist-ex-val">${s.rpe != null ? s.rpe : '—'}</div>
+            </div>`;
+          });
+          if (l.obs) {
+            html += `<div style="padding:2px 0 4px 28px;font-size:11px;color:var(--text3);font-style:italic">📝 ${l.obs}</div>`;
+          }
+        }
+        // Old flat format
+        else if (l.weight != null || l.reps != null || l.rpe != null) {
           html += `<div class="hist-ex-row">
-            <div class="hist-ex-name" style="${isDone ? 'text-decoration:line-through;opacity:.6' : ''}">${ex.name}</div>
+            <div class="hist-ex-name">${ex.name}</div>
             <div class="hist-ex-val">${l.weight != null ? l.weight + 'kg' : '—'}</div>
             <div class="hist-ex-val">${l.reps != null ? l.reps : '—'}</div>
             <div class="hist-ex-val">${l.rpe != null ? l.rpe : '—'}</div>
@@ -2050,6 +2286,7 @@ if ('serviceWorker' in navigator) {
 
 /* ===== INIT ===== */
 applyTheme();
+restoreTimer();
 renderHoy();
 
 })();
